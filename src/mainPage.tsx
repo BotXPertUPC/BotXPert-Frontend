@@ -27,10 +27,10 @@ function Dashboard() {
       {/* Header */}
       <header className="border-b bg-white">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-8 h-8 text-blue-500" />
-            <span className="text-xl font-semibold">BotXpert</span>
-          </div>
+            <div className="flex items-center gap-2">
+              <img src="/logo512.png" alt="BotXpert Logo" className="w-10 h-10" />
+              <img src="/nom_app_black.png" alt="BotXpert Name Logo Black" className="h-10" />
+            </div>
           <div className="flex items-center gap-4">
             <QuestionCircle className="w-6 h-6 text-gray-500" />
             <UserCircle className="w-8 h-8 text-gray-500" />

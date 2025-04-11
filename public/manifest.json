@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "BotXpert",
+  "name": "BotXpert - automate your chatbots",
   "icons": [
     {
       "src": "favicon.ico",
