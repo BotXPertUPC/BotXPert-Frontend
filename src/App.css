@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+
+/* Botons */
+.btn-primary {
+  @apply bg-primary text-white px-6 py-3 rounded-lg hover:bg-primaryHover transition;
+}
+
+.btn-secondary {
+  @apply bg-white text-primary px-6 py-3 rounded-lg hover:bg-lightBlue transition;
+}
+
+/* Enllaços de la navbar */
+.nav-link {
+  @apply text-white hover:text-lightBlue transition;
+}
+
+/* Seccions */
+.section-overlay {
+  @apply bg-overlay p-6 rounded-xl backdrop-blur-sm;
+}
+
+.card-dark {
+  @apply bg-dark/40 p-6 rounded-lg backdrop-blur-sm;
+}
