@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Bot, Save } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 function CreateChatbot() {
   const [activeTab, setActiveTab] = useState('crear');
@@ -12,9 +11,9 @@ function CreateChatbot() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/" className="text-gray-500 hover:text-gray-700">
+                <button onClick={() => window.history.back()} className="text-gray-500 hover:text-gray-700">
                 <ArrowLeft className="w-6 h-6" />
-              </Link>
+                </button>
               <div className="flex items-center gap-3">
                 <Bot className="w-10 h-10 text-blue-500" />
                 <div>
