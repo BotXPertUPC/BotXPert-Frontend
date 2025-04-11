@@ -1,6 +1,9 @@
+import React from 'react';
 import { MessageSquare, Plus, MoreVertical, PenSquare, MessageCircleQuestion as QuestionCircle, UserCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-function mainPage() {
+function Dashboard() {
+  const navigate = useNavigate();
   const chatbots = [
     {
       id: 'nextconsult',
@@ -39,14 +42,20 @@ function mainPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold mb-6">Els meus Chatbots</h1>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+          <button 
+            onClick={() => navigate('/create')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          >
             <Plus className="w-5 h-5" />
             Crear Chatbot
           </button>
         </div>
 
         {/* Create Chatbot Card */}
-        <div className="bg-white rounded-lg p-6 mb-6 border hover:shadow-md transition-shadow cursor-pointer">
+        <div 
+          onClick={() => navigate('/create')}
+          className="bg-white rounded-lg p-6 mb-6 border hover:shadow-md transition-shadow cursor-pointer"
+        >
           <div className="flex items-center gap-4">
             <div className="p-2 bg-gray-100 rounded-lg">
               <Plus className="w-6 h-6 text-gray-500" />
@@ -87,4 +96,4 @@ function mainPage() {
   );
 }
 
-export default mainPage;
+export default Dashboard;
