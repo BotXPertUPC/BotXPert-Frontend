@@ -1,8 +1,8 @@
 import React from 'react';
-import MainPage from './mainPage';
+import MainPage from './MainPage';
 import { Route, Routes } from 'react-router-dom';
-import CreateChatbot from './createChatbot';
-import WelcomePage from './welcomePage';
+import CreateChatbot from './CreateChatbot';
+import WelcomePage from './WelcomePage';
 
 function App() {
   return (
