@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Bot, Save } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 function CreateChatbot() {
   const [activeTab, setActiveTab] = useState('crear');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const navigate = useNavigate();
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -44,7 +50,14 @@ function CreateChatbot() {
               Crear
             </button>
             <button
-              onClick={() => setActiveTab('configurar')}
+              onClick={() => {
+                navigate('/flow', {
+                  state: {
+                    name,
+                    description,
+                  },
+                });
+              }}
               className={`py-4 px-2 border-b-2 font-medium ${
                 activeTab === 'configurar'
                   ? 'border-blue-500 text-blue-600'
@@ -53,6 +66,7 @@ function CreateChatbot() {
             >
               Configurar
             </button>
+
           </nav>
         </div>
       </div>
