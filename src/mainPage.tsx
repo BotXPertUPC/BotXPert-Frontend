@@ -41,13 +41,13 @@ function Dashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold mb-6">Els meus Chatbots</h1>
+          <h1 className="text-2xl font-semibold mb-6">Els meus Xatbots</h1>
           <button 
             onClick={() => navigate('/create')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            Crear Chatbot
+            Crear Xatbot
           </button>
         </div>
 
@@ -61,8 +61,8 @@ function Dashboard() {
               <Plus className="w-6 h-6 text-gray-500" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg">Crear Chatbot</h3>
-              <p className="text-gray-600">Create a version of chatbot for specific purpose</p>
+              <h3 className="font-semibold text-lg">Crear Xatbot</h3>
+              <p className="text-gray-600">Crea una versió del xatbot per a un propòsit específic</p>
             </div>
           </div>
         </div>

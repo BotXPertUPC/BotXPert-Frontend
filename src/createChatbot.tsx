@@ -23,7 +23,7 @@ function CreateChatbot() {
             </div>
             <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
               <Save className="w-5 h-5" />
-              Guardar
+              Desa
             </button>
           </div>
         </div>
@@ -62,28 +62,28 @@ function CreateChatbot() {
         {activeTab === 'crear' ? (
           <div className="space-y-6">
             <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4">Información básica</h2>
+              <h2 className="text-lg font-semibold mb-4">Informació bàsica</h2>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre
+                    Nom
                   </label>
                   <input
                     type="text"
                     id="name"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Nombre del chatbot"
+                    placeholder="Nom del chatbot"
                   />
                 </div>
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                    Descripción
+                    Descripció
                   </label>
                   <textarea
                     id="description"
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Describe el propósito de este chatbot"
+                    placeholder="Descriu el propòsit d'aquest chatbot"
                   />
                 </div>
               </div>
@@ -91,8 +91,8 @@ function CreateChatbot() {
           </div>
         ) : (
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Configuración</h2>
-            <p className="text-gray-600">Contenido de configuración aquí...</p>
+            <h2 className="text-lg font-semibold mb-4">Configuració</h2>
+            <p className="text-gray-600">Contingut de configuració aquí...</p>
           </div>
         )}
       </main>
