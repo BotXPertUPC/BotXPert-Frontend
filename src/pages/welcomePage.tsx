@@ -68,13 +68,13 @@ function WelcomePage() {
             {isMenuOpen && (
                 <div className="md:hidden bg-[#001f3f] p-4">
                     <div className="flex flex-col space-y-4">
-                        <button className="nav-link text-left">Use Cases</button>
-                        <button className="nav-link text-left">AI Design</button>
-                        <button className="nav-link text-left">Templates</button>
-                        <button className="nav-link text-left">Resources</button>
-                        <button className="nav-link text-left">Pricing</button>
-                        <button className="nav-link text-left">Log in</button>
-                        <button className="btn-secondary w-full">Sign up for free</button>
+                        <button className="nav-link text-left">Casos d'ús</button>
+                        <button className="nav-link text-left">Disseny IA</button>
+                        <button className="nav-link text-left">Plantilles</button>
+                        <button className="nav-link text-left">Recursos</button>
+                        <button className="nav-link text-left">Preus</button>
+                        <button className="nav-link text-left">Inicia sessió</button>
+                        <button className="btn-secondary w-full">Registra't gratis</button>
                     </div>
                 </div>
             )}
@@ -83,16 +83,16 @@ function WelcomePage() {
             <main className="px-4 py-16 md:py-32 text-center">
                 <div className="max-w-4xl mx-auto">
                     <h2 className="text-4xl md:text-6xl font-bold mb-6">
-                        Automatitza la creació de xatbots per tothom
+                        Automatitza la creació de xatbots per a tothom
                     </h2>
                     <p className="text-lg md:text-xl text-paragraphLight mb-4">
-                        Fluxes senzills no han de requerir programari complex.
+                        Fluxos senzills no han de requerir programari complex.
                     </p>
                     <button 
                         className="btn-primary" 
                         onClick={() => navigate('/main')}
                     >
-                        Start
+                        Comença
                     </button>
                 </div>
             </main>
@@ -134,7 +134,7 @@ function WelcomePage() {
                                 </button>
                             </div>
                             <button className="flex items-center space-x-2 nav-link">
-                                <span>More details</span>
+                                <span>Més detalls</span>
                                 <ChevronDown className="w-4 h-4" />
                             </button>
                     </div>

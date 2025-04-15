@@ -1,10 +1,30 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Bot, Save } from 'lucide-react';
+import { ArrowLeft, Bot, Save, Rocket } from 'lucide-react';
+import CreateTab from './CreateTab';
+import ConfigTab from './ConfigTab';
 import { useNavigate } from 'react-router-dom';
 
 
 function CreateChatbot() {
   const [activeTab, setActiveTab] = useState('crear');
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showDeployModal, setShowDeployModal] = useState(false);
+
+  const handleSaveClick = () => {
+    setShowSaveModal(true);
+  };
+
+  const handleDeployClick = () => {
+    setShowDeployModal(true);
+  };
+
+  const closeSaveModal = () => {
+    setShowSaveModal(false);
+  };
+
+  const closeDeployModal = () => {
+    setShowDeployModal(false);
+  };
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const navigate = useNavigate();
@@ -27,10 +47,20 @@ function CreateChatbot() {
                 </div>
               </div>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-              <Save className="w-5 h-5" />
-              Guardar
-            </button>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={handleDeployClick} 
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                <Rocket className="w-5 h-5" />
+                Desplegar
+              </button>
+              <button 
+                onClick={handleSaveClick} 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                <Save className="w-5 h-5" />
+                Desa
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -74,42 +104,55 @@ function CreateChatbot() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
         {activeTab === 'crear' ? (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4">Información básica</h2>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Nombre del chatbot"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                    Descripción
-                  </label>
-                  <textarea
-                    id="description"
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Describe el propósito de este chatbot"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <CreateTab />
         ) : (
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Configuración</h2>
-            <p className="text-gray-600">Contenido de configuración aquí...</p>
-          </div>
+          <ConfigTab />
         )}
       </main>
+
+      {/* Save Modal */}
+      {showSaveModal && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Confirmació</h2>
+            <p>Estàs segur que vols desar els canvis?</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button 
+                onClick={closeSaveModal} 
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                Cancel·lar
+              </button>
+              <button 
+                onClick={closeSaveModal} 
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deploy Modal */}
+      {showDeployModal && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Confirmació</h2>
+            <p>Estàs segur que vols desplegar l'aplicació en el telèfon 666666666?</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button 
+                onClick={closeDeployModal} 
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                Cancel·lar
+              </button>
+              <button 
+                onClick={closeDeployModal} 
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
