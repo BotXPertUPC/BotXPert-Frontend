@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { ArrowLeft, Bot, Save, Rocket } from 'lucide-react';
 import CreateTab from './CreateTab';
 import ConfigTab from './ConfigTab';
-import { useNavigate } from 'react-router-dom';
-
 
 function CreateChatbot() {
   const [activeTab, setActiveTab] = useState('crear');
@@ -25,10 +23,6 @@ function CreateChatbot() {
   const closeDeployModal = () => {
     setShowDeployModal(false);
   };
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const navigate = useNavigate();
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,14 +74,7 @@ function CreateChatbot() {
               Crear
             </button>
             <button
-              onClick={() => {
-                navigate('/flow', {
-                  state: {
-                    name,
-                    description,
-                  },
-                });
-              }}
+              onClick={() => setActiveTab('configurar')}
               className={`py-4 px-2 border-b-2 font-medium ${
                 activeTab === 'configurar'
                   ? 'border-blue-500 text-blue-600'
@@ -96,7 +83,6 @@ function CreateChatbot() {
             >
               Configurar
             </button>
-
           </nav>
         </div>
       </div>
