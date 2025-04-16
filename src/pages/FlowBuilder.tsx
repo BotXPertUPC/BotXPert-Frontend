@@ -1,5 +1,6 @@
-// src/pages/ConfigTab.tsx
-import React, { useState, useCallback } from 'react';
+// src/pages/FlowBuilder.tsx
+import React, { useState, useCallback, useEffect } from 'react';
+import { ReactFlowProvider } from 'reactflow';
 import ReactFlow, {
   addEdge,
   Background,
@@ -16,6 +17,7 @@ import ReactFlow, {
   NodeRemoveChange,
   NodeSelectionChange,
   getSmoothStepPath,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -106,6 +108,14 @@ const FlowBuilder = () => {
   ]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [nodeId, setNodeId] = useState(2);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const { setCenter } = useReactFlow();
 
   /* ---------- Helpers ---------- */
   const hasOutgoingEdge = useCallback(
@@ -115,29 +125,57 @@ const FlowBuilder = () => {
 
   /* ---------- Afegir node fill (només un per pare) ---------- */
   const addNode = (type: string, sourceNodeId: string) => {
-    if (hasOutgoingEdge(sourceNodeId)) return; // ja té sortida
-
+    // No fem res si no tenim ID vàlid
+    if (!sourceNodeId) return;
+  
     const source = nodes.find((n) => n.id === sourceNodeId);
+    if (!source) return;
+  
+    // Tipus de node que no poden tenir fills
+    const noChildTypes = ['final'];
+  
+    // No permetem afegir si el tipus del node pare és d’aquests
+    if (noChildTypes.includes(source.type || "")) return;
+  
+    // Si ja té una sortida, tampoc deixem afegir-hi més
+    if (hasOutgoingEdge(sourceNodeId)) return;
+  
     const newNode: Node = {
       id: String(nodeId),
       type,
-      position: source
-        ? { x: source.position.x + 200, y: source.position.y }
-        : { x: Math.random() * 400, y: Math.random() * 400 },
+      position: {
+        x: source.position.x + 320,
+        y: source.position.y + 100,
+      },
       data: {
         label: `Nou estat: ${type}`,
         text: '',
         options: type === 'pregunta' ? ['Opció 1', 'Opció 2'] : [],
       },
     };
-
+  
     setNodes((nds) => [...nds, newNode]);
     setEdges((eds) => [
       ...eds,
-      { id: `e${sourceNodeId}-${nodeId}`, source: sourceNodeId, target: String(nodeId), type: 'custom' },
+      {
+        id: `e${sourceNodeId}-${nodeId}`,
+        source: sourceNodeId,
+        target: String(nodeId),
+        type: 'custom',
+      },
     ]);
+    setCenter(
+      newNode.position.x + 125, // centrem sobre la meitat del node (ample aprox)
+      newNode.position.y + 50,  // centrem una mica més avall per quedar centrat verticalment
+      {
+        zoom: 1.5, // opcional, pots ajustar-ho segons vulguis
+        duration: 400, // animació suau
+      }
+    );
     setNodeId((id) => id + 1);
+    selectNode(String(nodeId));
   };
+  
 
   /* ---------- Connexió drag‑and‑drop ---------- */
   const handleConnect = (params: Connection) => {
@@ -186,6 +224,50 @@ const FlowBuilder = () => {
         eds,
       ),
     );
+  
+    const selectNode = (nodeId: string | null) => {
+      setSelectedNodeId(nodeId);
+    
+      setNodes((nds) =>
+        nds.map((n) => ({
+          ...n,
+          selected: n.id === nodeId,
+        }))
+      );
+    };
+    
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (!selectedNodeId) return;
+  
+        const node = nodes.find((n) => n.id === selectedNodeId);
+        if (!node) return;
+  
+        if (selectedNodeId === ROOT_ID) {
+          showToast("No pots esborrar el node inicial.");
+          return;
+        }
+  
+        if (hasOutgoingEdge(selectedNodeId)) {
+          showToast("Aquest node té sortides. Esborra-les primer.");
+          return;
+        }
+  
+        const parentEdge = edges.find((e) => e.target === selectedNodeId);
+        const parentNodeId = parentEdge ? parentEdge.source : null;
+  
+        setNodes((nds) => nds.filter((n) => n.id !== selectedNodeId));
+        setEdges((eds) => eds.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId));
+        selectNode(parentNodeId);
+      }
+    };
+  
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNodeId, nodes, edges, hasOutgoingEdge]);
+    
+    
 
   /* ---------- Render ---------- */
   return (
@@ -233,14 +315,27 @@ const FlowBuilder = () => {
                 }
                 onDelete={(nodeId) => {
                   if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) return; // Prevent deletion of root or nodes with outgoing edges
+
+                  // Find the parent node ID (source of the incoming edge)
+                  const parentEdge = edges.find((e) => e.target === nodeId);
+                  const parentNodeId = parentEdge ? parentEdge.source : null;
+
                   setNodes((nds) => nds.filter((n) => n.id !== nodeId));
                   setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-                  setSelectedNodeId(null);
+
+                  selectNode(parentNodeId);
                 }}
               />
             </div>
           )}
         </div>
+
+        {toast && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow z-50 animate-fadeIn">
+            {toast}
+          </div>
+        )}
+
 
         {/* --- Canvas React‑Flow --- */}
         <div className="flex-1 bg-white rounded-lg p-6 shadow-sm relative h-full">
@@ -252,8 +347,8 @@ const FlowBuilder = () => {
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             onConnect={handleConnect}
-            onNodeClick={(_, node) => setSelectedNodeId(node.id)}
-            onNodeDragStart={(_, node) => setSelectedNodeId(node.id)}
+            onNodeClick={(_, node) => selectNode(node.id)}
+            onNodeDragStart={(_, node) => selectNode(node.id)}
             fitView
           >
             <MiniMap />
@@ -266,4 +361,11 @@ const FlowBuilder = () => {
   );
 };
 
-export default FlowBuilder;
+const ConfigTab = () => (
+  <ReactFlowProvider>
+    <FlowBuilder />
+  </ReactFlowProvider>
+);
+
+export default ConfigTab;
+

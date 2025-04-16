@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Bot, Save, Rocket } from 'lucide-react';
 import CreateTab from './CreateTab';
-import ConfigTab from './ConfigTab';
+import FlowBuilder from './FlowBuilder';
 
 function CreateChatbot() {
   const [activeTab, setActiveTab] = useState('crear');
@@ -92,7 +92,7 @@ function CreateChatbot() {
         {activeTab === 'crear' ? (
           <CreateTab />
         ) : (
-          <ConfigTab />
+          <FlowBuilder />
         )}
       </main>
 
