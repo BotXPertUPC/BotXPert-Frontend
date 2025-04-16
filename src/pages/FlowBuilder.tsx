@@ -175,6 +175,32 @@ const FlowBuilder = () => {
     setNodeId((id) => id + 1);
     selectNode(String(nodeId));
   };
+
+  const deleteNode = (nodeId: string) => {
+    if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) {
+      showToast("No pots esborrar aquest node.");
+      return;
+    }
+  
+    const parentEdge = edges.find((e) => e.target === nodeId);
+    const parentNodeId = parentEdge ? parentEdge.source : null;
+  
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+  
+    if (parentNodeId) {
+      const parentNode = nodes.find((n) => n.id === parentNodeId);
+      if (parentNode) {
+        setCenter(
+          parentNode.position.x + 125,
+          parentNode.position.y + 50,
+          { zoom: 1, duration: 1500 }
+        );
+      }
+    }
+  
+    selectNode(parentNodeId);
+  };
   
 
   /* ---------- Connexió drag‑and‑drop ---------- */
@@ -236,36 +262,24 @@ const FlowBuilder = () => {
       );
     };
     
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (!selectedNodeId) return;
-  
-        const node = nodes.find((n) => n.id === selectedNodeId);
-        if (!node) return;
-  
-        if (selectedNodeId === ROOT_ID) {
-          showToast("No pots esborrar el node inicial.");
-          return;
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        // Si el focus està en un input, textarea o select, no fem res
+        const tag = (e.target as HTMLElement).tagName.toLowerCase();
+        if (['input', 'textarea', 'select'].includes(tag)) return;
+    
+        // Si s'ha premut Delete o Backspace
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (!selectedNodeId) return;
+          deleteNode(selectedNodeId);
         }
-  
-        if (hasOutgoingEdge(selectedNodeId)) {
-          showToast("Aquest node té sortides. Esborra-les primer.");
-          return;
-        }
-  
-        const parentEdge = edges.find((e) => e.target === selectedNodeId);
-        const parentNodeId = parentEdge ? parentEdge.source : null;
-  
-        setNodes((nds) => nds.filter((n) => n.id !== selectedNodeId));
-        setEdges((eds) => eds.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId));
-        selectNode(parentNodeId);
-      }
-    };
-  
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, nodes, edges, hasOutgoingEdge]);
+      };
+    
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedNodeId, nodes, edges]);
+    
+    
     
   useEffect(() => {
     const rootNodeExists = nodes.some((n) => n.id === ROOT_ID);
@@ -278,105 +292,62 @@ const FlowBuilder = () => {
   /* ---------- Render ---------- */
   return (
     <div className="min-h-screen bg-gray-50">
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-0 space-y-6 flex h-screen">
-        {/* --- Selector de tipus de node --- */}
-        <div className="mb-4">
-          <label
-            htmlFor="nodeDropdown"
-            className="block text-sm font-medium text-gray-700"
+      <main className="flex h-screen">
+      {/* Sidebar esquerra amb botons */}
+      <div className="w-56 bg-white border-r p-4 space-y-2">
+        <p className="text-sm font-semibold text-gray-700 mb-2">Afegeix node</p>
+        {['missatge', 'pregunta', 'condicional', 'resposta', 'final'].map((type) => (
+          <button
+            key={type}
+            onClick={() => selectedNodeId && addNode(type, selectedNodeId)}
+            className="w-full text-left px-3 py-2 rounded-lg text-sm bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition"
           >
-            Add Node to Selected Node
-          </label>
-          <select
-            id="nodeDropdown"
-            size={6}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              e.stopPropagation();
-              const value = e.target.value;
-              if (value && selectedNodeId) {
-                addNode(value, selectedNodeId);
-                e.target.value = '';
-              }
-            }}
-            className="border rounded p-1 bg-white text-black z-50 relative"
-          >
-            <option value="">Afegeix un node</option>
-            <option value="missatge">Missatge</option>
-            <option value="pregunta">Pregunta amb opcions</option>
-            <option value="condicional">Condicional</option>
-            <option value="resposta">Resposta oberta</option>
-            <option value="final">Fi del flux</option>
-          </select>
+            {type === 'missatge' && '💬 Missatge'}
+            {type === 'pregunta' && '❓ Pregunta'}
+            {type === 'condicional' && '🔀 Condicional'}
+            {type === 'resposta' && '✍️ Resposta'}
+            {type === 'final' && '🏁 Final'}
+          </button>
+        ))}
+      </div>
 
-          {/* Node Settings Panel */}
-          {selectedNodeId && (
-            <div className="mt-4">
-              <NodeSettings
-              node={nodes.find((n) => n.id === selectedNodeId) || null}
-              onChange={(updatedNode) =>
-                setNodes((nds) =>
+      {/* Diagrama central */}
+      <div className="flex-1 bg-white rounded-lg p-6 shadow-sm relative h-full">
+        <ReactFlow
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={handleEdgesChange}
+          onConnect={handleConnect}
+          onNodeClick={(_, node) => selectNode(node.id)}
+          onNodeDragStart={(_, node) => selectNode(node.id)}
+          fitView
+          deleteKeyCode={null} // Disable default delete key behavior
+        >
+          <MiniMap />
+          <Controls />
+          <Background />
+        </ReactFlow>
+      </div>
+
+      {/* Panell de configuració dret */}
+      {selectedNodeId && (
+        <div className="w-80 bg-white border-l p-4 shadow h-full overflow-y-auto">
+          <NodeSettings
+            node={nodes.find((n) => n.id === selectedNodeId) || null}
+            onChange={(updatedNode) =>
+              setNodes((nds) =>
                 nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
-                )
-              }
-              onDelete={(nodeId) => {
-                if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) return; // Prevent deletion of root or nodes with outgoing edges
-
-                // Find the parent node ID (source of the incoming edge)
-                const parentEdge = edges.find((e) => e.target === nodeId);
-                const parentNodeId = parentEdge ? parentEdge.source : null;
-
-                setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-                setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-
-                if (parentNodeId) {
-                const parentNode = nodes.find((n) => n.id === parentNodeId);
-                if (parentNode) {
-                  setCenter(
-                  parentNode.position.x + 125, // Center on the middle of the parent node
-                  parentNode.position.y + 50,  // Slightly lower for vertical centering
-                  {
-                    zoom: 1, // Optional, adjust as needed
-                    duration: 1500, // Smooth animation
-                  }
-                  );
-                }
-                }
-
-                selectNode(parentNodeId);
-              }}
-              />
-            </div>
-          )}
+              )
+            }
+            onDelete={deleteNode}
+          />
         </div>
+      )}
+    </main>
 
-        {toast && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow z-50 animate-fadeIn">
-            {toast}
-          </div>
-        )}
-
-
-        {/* --- Canvas React‑Flow --- */}
-        <div className="flex-1 bg-white rounded-lg p-6 shadow-sm relative h-full">
-          <ReactFlow
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={handleNodesChange}
-            onEdgesChange={handleEdgesChange}
-            onConnect={handleConnect}
-            onNodeClick={(_, node) => selectNode(node.id)}
-            onNodeDragStart={(_, node) => selectNode(node.id)}
-            fitView
-          >
-            <MiniMap />
-            <Controls />
-            <Background />
-          </ReactFlow>
-        </div>
-      </main>
     </div>
   );
 };

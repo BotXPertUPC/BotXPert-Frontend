@@ -1,3 +1,4 @@
+// src/components/nodeSettings.tsx
 import { useEffect, useState } from 'react';
 import { Node } from 'reactflow';
 
