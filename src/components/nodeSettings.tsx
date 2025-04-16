@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import { Node } from 'reactflow';
 
 interface Props {
@@ -8,22 +8,27 @@ interface Props {
 }
 
 const NodeSettings = ({ node, onChange, onDelete }: Props) => {
+  const [inputValue, setInputValue] = useState('');
 
-    const [inputValue, setInputValue] = useState('');
+  // Actualitza l'input quan es canvia de node
+  useEffect(() => {
+    if (node?.data?.text) {
+      setInputValue(node.data.text);
+    } else {
+      setInputValue('');
+    }
+  }, [node]);
 
-    useEffect(() => {
-        if (!node) return;
-        const timeout = setTimeout(() => {
-          onChange({ ...node, data: { ...node.data, text: inputValue } });
-        }, 250);
-        return () => clearTimeout(timeout);
-      }, [inputValue]);
+  // Aplica el canvi de text amb debounce
+  useEffect(() => {
+    if (!node) return;
+    const timeout = setTimeout(() => {
+      onChange({ ...node, data: { ...node.data, text: inputValue } });
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [inputValue]);
 
   if (!node) return null;
-
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...node, data: { ...node.data, text: e.target.value } });
-  };
 
   const handleOptionChange = (index: number, value: string) => {
     const updatedOptions = [...(node.data.options || [])];
@@ -39,13 +44,25 @@ const NodeSettings = ({ node, onChange, onDelete }: Props) => {
   return (
     <div className="w-80 bg-white p-4 border-l shadow h-full overflow-y-auto">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-lg">Configuració del node</h3>
-        <button onClick={() => onDelete(node.id)} className="text-red-600 text-sm">🗑 Eliminar</button>
+        <h3 className="font-semibold text-lg">Configuració del node
+        <span className="ml-2 text-sm font-normal text-gray-500">
+          ({node.type} - ID: {node.id})
+  </span>
+        </h3>
+        <button
+          onClick={() => onDelete(node.id)}
+          className="text-red-600 text-sm hover:underline"
+        >
+          🗑 Eliminar
+        </button>
       </div>
 
-      {node.type === 'missatge' && (
+      {/* Camp de text per missatge, pregunta, condicional, resposta */}
+      {['missatge', 'pregunta', 'condicional', 'resposta'].includes(node.type || '') && (
         <>
-          <label className="text-sm font-medium block mb-1">Text del missatge</label>
+          <label className="text-sm font-medium block mb-1">
+            {node.type === 'pregunta' ? 'Pregunta' : 'Text'}
+          </label>
           <input
             type="text"
             value={inputValue}
@@ -55,16 +72,9 @@ const NodeSettings = ({ node, onChange, onDelete }: Props) => {
         </>
       )}
 
+      {/* Opcions per preguntes */}
       {node.type === 'pregunta' && (
         <>
-          <label className="text-sm font-medium block mb-1">Pregunta</label>
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="w-full p-2 border rounded mb-4"
-          />
-
           <label className="text-sm font-medium block mb-2">Opcions de resposta</label>
           {node.data.options?.map((opt: string, i: number) => (
             <input
@@ -79,7 +89,7 @@ const NodeSettings = ({ node, onChange, onDelete }: Props) => {
             onClick={addOption}
             className="text-sm text-blue-600 mt-2 hover:underline"
           >
-            Afegir opció
+            ➕ Afegir opció
           </button>
         </>
       )}
