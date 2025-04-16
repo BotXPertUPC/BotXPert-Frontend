@@ -5,6 +5,7 @@ const MessageNode = ({ data }: any) => {
     <div className="bg-white border rounded p-4 shadow-sm w-56">
       <p className="font-medium">💬 Missatge:</p>
       <p className="text-sm">{data.text || 'Escriu un missatge...'}</p>
+      {data.dropdown && <div className="mt-2">{data.dropdown}</div>}
       <Handle type="source" position={Position.Right} />
       <Handle type="target" position={Position.Left} />
     </div>
