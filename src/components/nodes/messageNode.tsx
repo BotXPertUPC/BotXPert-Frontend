@@ -1,15 +1,10 @@
-import { Handle, Position } from 'reactflow';
+import BaseNode from './baseNode';
 
-const MessageNode = ({ data }: any) => {
-  return (
-    <div className="bg-white border rounded p-4 shadow-sm w-56">
-      <p className="font-medium">💬 Missatge:</p>
-      <p className="text-sm">{data.text || 'Escriu un missatge...'}</p>
-      {data.dropdown && <div className="mt-2">{data.dropdown}</div>}
-      <Handle type="source" position={Position.Right} />
-      <Handle type="target" position={Position.Left} />
-    </div>
-  );
-};
+const MessageNode = ({ data }: any) => (
+  <BaseNode backgroundColor="bg-blue-50" borderColor="border-blue-300" icon="💬">
+    <p className="font-medium text-blue-900">Missatge</p>
+    <p className="text-sm text-blue-800">{data.text || 'Escriu un missatge...'}</p>
+  </BaseNode>
+);
 
 export default MessageNode;

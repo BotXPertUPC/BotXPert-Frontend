@@ -22,10 +22,14 @@ import 'reactflow/dist/style.css';
 import MessageNode from '../components/nodes/messageNode';
 import QuestionNode from '../components/nodes/questionNode';
 import FinalNode from '../components/nodes/finalNode';
+import CondicionalNode from '../components/nodes/condicionalNode';
+import RespostaNode from '../components/nodes/respostaNode';
 
 const nodeTypes = {
   missatge: MessageNode,
   pregunta: QuestionNode,
+  condicional: CondicionalNode,
+  resposta: RespostaNode,
   final: FinalNode,
 };
 
@@ -225,6 +229,7 @@ const FlowBuilder = () => {
             onEdgesChange={handleEdgesChange}
             onConnect={handleConnect}
             onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+            onNodeDragStart={(_, node) => setSelectedNodeId(node.id)}
             fitView
           >
             <MiniMap />

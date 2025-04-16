@@ -1,14 +1,9 @@
-import React from 'react';
-import { Handle, Position } from 'reactflow';
+import BaseNode from './baseNode';
 
-const FinalNode = ({ data }: { data: { label: string } }) => {
-  return (
-    <div style={{ padding: 10, border: '1px solid black', borderRadius: 5, backgroundColor: '#f8d7da' }}>
-      <strong>{data.label}</strong>
-      {/* Only allow incoming edges */}
-      <Handle type="target" position={Position.Top} />
-    </div>
-  );
-};
+const FinalNode = ({ data }: any) => (
+  <BaseNode backgroundColor="bg-red-50" borderColor="border-red-300" icon="🏁" showSource={false}>
+    <p className="font-semibold text-red-800">{data.label || 'Fi del flux'}</p>
+  </BaseNode>
+);
 
 export default FinalNode;

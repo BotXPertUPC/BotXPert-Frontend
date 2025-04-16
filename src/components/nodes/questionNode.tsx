@@ -1,19 +1,14 @@
-import { Handle, Position } from 'reactflow';
+import BaseNode from './baseNode';
 
-const QuestionNode = ({ data }: any) => {
-  return (
-    <div className="bg-yellow-50 border border-yellow-300 rounded p-4 shadow-sm w-60">
-      <p className="font-semibold">{data.text || 'Pregunta'}</p>
-      <ul className="mt-2 space-y-1 text-sm text-gray-700">
-        {(data.options || []).map((opt: string, i: number) => (
-          <li key={i}>{opt}</li>
-        ))}
-      </ul>
-      {data.dropdown && <div className="mt-2">{data.dropdown}</div>}
-      <Handle type="source" position={Position.Right} />
-      <Handle type="target" position={Position.Left} />
-    </div>
-  );
-};
+const QuestionNode = ({ data }: any) => (
+  <BaseNode backgroundColor="bg-yellow-50" borderColor="border-yellow-300" icon="❓">
+    <p className="font-medium text-yellow-900">{data.text || 'Pregunta'}</p>
+    <ul className="mt-2 text-sm text-yellow-800 list-disc list-inside">
+      {(data.options || []).map((opt: string, i: number) => (
+        <li key={i}>{opt}</li>
+      ))}
+    </ul>
+  </BaseNode>
+);
 
 export default QuestionNode;
