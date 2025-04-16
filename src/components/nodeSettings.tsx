@@ -44,7 +44,11 @@ const NodeSettings = ({ node, onChange, onDelete }: Props) => {
   return (
     <div className="w-80 bg-white p-4 border-l shadow h-full overflow-y-auto">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-lg">Configuració del node</h3>
+        <h3 className="font-semibold text-lg">Configuració del node
+        <span className="ml-2 text-sm font-normal text-gray-500">
+          ({node.type} - ID: {node.id})
+  </span>
+        </h3>
         <button
           onClick={() => onDelete(node.id)}
           className="text-red-600 text-sm hover:underline"

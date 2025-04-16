@@ -1,4 +1,4 @@
-// src/pages/FlowBuilder.tsx
+// src/pages/ConfigTab.tsx
 import React, { useState, useCallback } from 'react';
 import ReactFlow, {
   addEdge,
@@ -19,13 +19,17 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
+
+import StartNode from '../components/nodes/startNode';
 import MessageNode from '../components/nodes/messageNode';
 import QuestionNode from '../components/nodes/questionNode';
 import FinalNode from '../components/nodes/finalNode';
 import CondicionalNode from '../components/nodes/condicionalNode';
 import RespostaNode from '../components/nodes/respostaNode';
+import NodeSettings from '../components/nodeSettings';
 
 const nodeTypes = {
+  inici: StartNode,
   missatge: MessageNode,
   pregunta: QuestionNode,
   condicional: CondicionalNode,
@@ -95,7 +99,7 @@ const FlowBuilder = () => {
   const [nodes, setNodes] = useState<Node[]>([
     {
       id: ROOT_ID,
-      type: 'default',
+      type: 'inici',
       position: { x: 100, y: 100 },
       data: { label: <p>Inici</p> },
     },
@@ -216,6 +220,26 @@ const FlowBuilder = () => {
             <option value="resposta">Resposta oberta</option>
             <option value="final">Fi del flux</option>
           </select>
+
+          {/* Node Settings Panel */}
+          {selectedNodeId && (
+            <div className="mt-4">
+              <NodeSettings
+                node={nodes.find((n) => n.id === selectedNodeId) || null}
+                onChange={(updatedNode) =>
+                  setNodes((nds) =>
+                    nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+                  )
+                }
+                onDelete={(nodeId) => {
+                  if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) return; // Prevent deletion of root or nodes with outgoing edges
+                  setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+                  setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+                  setSelectedNodeId(null);
+                }}
+              />
+            </div>
+          )}
         </div>
 
         {/* --- Canvas React‑Flow --- */}

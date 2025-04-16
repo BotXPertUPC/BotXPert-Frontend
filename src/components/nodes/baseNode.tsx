@@ -7,6 +7,7 @@ interface BaseNodeProps {
   backgroundColor?: string;
   icon?: string;
   borderColor?: string;
+  selected?: boolean;
   showSource?: boolean;
   showTarget?: boolean;
 }
@@ -16,11 +17,16 @@ const BaseNode = ({
   backgroundColor = 'bg-white',
   borderColor = 'border-gray-300',
   icon,
+  selected = false,
   showSource = true,
   showTarget = true,
 }: BaseNodeProps) => {
   return (
-    <div className={`rounded-xl p-4 shadow-md w-64 border ${backgroundColor} ${borderColor}`}>
+    <div className={`
+      rounded-xl p-4 w-64 border shadow-md transition-all
+      ${backgroundColor} ${borderColor}
+      ${selected ? 'ring-2 ring-blue-400' : ''}
+    `}>
       {icon && <div className="text-2xl mb-1">{icon}</div>}
       {children}
       {showTarget && <Handle type="target" position={Position.Left} />}
