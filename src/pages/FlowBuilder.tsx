@@ -168,8 +168,8 @@ const FlowBuilder = () => {
       newNode.position.x + 125, // centrem sobre la meitat del node (ample aprox)
       newNode.position.y + 50,  // centrem una mica més avall per quedar centrat verticalment
       {
-        zoom: 1.5, // opcional, pots ajustar-ho segons vulguis
-        duration: 400, // animació suau
+        zoom: 1, // opcional, pots ajustar-ho segons vulguis
+        duration: 1500, // animació suau
       }
     );
     setNodeId((id) => id + 1);
@@ -267,7 +267,13 @@ const FlowBuilder = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedNodeId, nodes, edges, hasOutgoingEdge]);
     
-    
+  useEffect(() => {
+    const rootNodeExists = nodes.some((n) => n.id === ROOT_ID);
+    if (!selectedNodeId && rootNodeExists) {
+      selectNode(ROOT_ID);
+    }
+  }, [selectedNodeId, nodes]);
+  
 
   /* ---------- Render ---------- */
   return (
@@ -307,24 +313,38 @@ const FlowBuilder = () => {
           {selectedNodeId && (
             <div className="mt-4">
               <NodeSettings
-                node={nodes.find((n) => n.id === selectedNodeId) || null}
-                onChange={(updatedNode) =>
-                  setNodes((nds) =>
-                    nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
-                  )
+              node={nodes.find((n) => n.id === selectedNodeId) || null}
+              onChange={(updatedNode) =>
+                setNodes((nds) =>
+                nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+                )
+              }
+              onDelete={(nodeId) => {
+                if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) return; // Prevent deletion of root or nodes with outgoing edges
+
+                // Find the parent node ID (source of the incoming edge)
+                const parentEdge = edges.find((e) => e.target === nodeId);
+                const parentNodeId = parentEdge ? parentEdge.source : null;
+
+                setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+                setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+
+                if (parentNodeId) {
+                const parentNode = nodes.find((n) => n.id === parentNodeId);
+                if (parentNode) {
+                  setCenter(
+                  parentNode.position.x + 125, // Center on the middle of the parent node
+                  parentNode.position.y + 50,  // Slightly lower for vertical centering
+                  {
+                    zoom: 1, // Optional, adjust as needed
+                    duration: 1500, // Smooth animation
+                  }
+                  );
                 }
-                onDelete={(nodeId) => {
-                  if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) return; // Prevent deletion of root or nodes with outgoing edges
+                }
 
-                  // Find the parent node ID (source of the incoming edge)
-                  const parentEdge = edges.find((e) => e.target === nodeId);
-                  const parentNodeId = parentEdge ? parentEdge.source : null;
-
-                  setNodes((nds) => nds.filter((n) => n.id !== nodeId));
-                  setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-
-                  selectNode(parentNodeId);
-                }}
+                selectNode(parentNodeId);
+              }}
               />
             </div>
           )}
