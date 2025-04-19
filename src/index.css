@@ -6,3 +6,17 @@ body {
   contain-intrinsic-size: auto;
   overflow-anchor: none;
 }
+
+.react-flow__edge-path {
+  stroke: #4b5563;
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 6;
+  animation: dashmove 1s linear infinite;
+}
+
+@keyframes dashmove {
+  to {
+    stroke-dashoffset: -12;
+  }
+}

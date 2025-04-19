@@ -117,11 +117,83 @@ const FlowBuilder = () => {
 
   const { setCenter } = useReactFlow();
 
+  const [connectOption, setConnectOption] = useState<{
+    nodeId: string;
+    optionIndex: number;
+  } | null>(null);
+
   /* ---------- Helpers ---------- */
   const hasOutgoingEdge = useCallback(
     (id: string) => edges.some((e) => e.source === id),
     [edges],
   );
+
+  const handleOptionConnect = (fromNodeId: string, optionIndex: number) => {
+    const type = prompt('Tipus de node: missatge / resposta / final');
+    if (!type) return;
+  
+    const newId = String(nodeId);
+    const fromNode = nodes.find((n) => n.id === fromNodeId);
+    if (!fromNode) return;
+  
+    const newNode: Node = {
+      id: newId,
+      type,
+      position: {
+        x: fromNode.position.x + 300,
+        y: fromNode.position.y + optionIndex * 120 + 40,
+      },
+      data: {
+        text: '',
+        id: newId,
+      },
+    };
+  
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id === fromNodeId) {
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              connections: {
+                ...(n.data.connections || {}),
+                [optionIndex]: newId,
+              },
+              onConnectOption: handleOptionConnect,
+              setConnectOption,
+              connectOption,
+            },
+          };
+        }
+        return n;
+      }).concat({
+        ...newNode,
+        data: {
+          ...newNode.data,
+          setConnectOption: type === 'pregunta' ? setConnectOption : undefined,
+          onConnectOption: type === 'pregunta' ? handleOptionConnect : undefined,
+          options: type === 'pregunta' ? ['Opció 1', 'Opció 2'] : undefined,
+          connections: type === 'pregunta' ? {} : undefined,
+        },
+      })
+    );
+  
+    setEdges((eds) => [
+      ...eds,
+      {
+        id: `e${fromNodeId}-${newId}`,
+        source: fromNodeId,
+        target: newId,
+        type: 'custom',
+        sourceHandle: `option-${optionIndex}`,
+      },
+    ]);
+  
+    setNodeId((id) => id + 1);
+    setSelectedNodeId(newId);
+  };
+  
 
   /* ---------- Afegir node fill (només un per pare) ---------- */
   const addNode = (type: string, sourceNodeId: string) => {
@@ -137,9 +209,9 @@ const FlowBuilder = () => {
     // No permetem afegir si el tipus del node pare és d’aquests
     if (noChildTypes.includes(source.type || "")) return;
   
-    // Si ja té una sortida, tampoc deixem afegir-hi més
-    if (hasOutgoingEdge(sourceNodeId)) return;
-  
+    // Si NO és pregunta i ja té una sortida, bloqueja
+    if (source.type !== 'pregunta' && hasOutgoingEdge(sourceNodeId)) return;
+      
     const newNode: Node = {
       id: String(nodeId),
       type,
@@ -151,6 +223,10 @@ const FlowBuilder = () => {
         label: `Nou estat: ${type}`,
         text: '',
         options: type === 'pregunta' ? ['Opció 1', 'Opció 2'] : [],
+        connections: type === 'pregunta' ? {} : undefined,
+        onConnectOption: type === 'pregunta' ? handleOptionConnect : undefined,
+        setConnectOption: type === 'pregunta' ? setConnectOption : undefined,
+        connectOption,
       },
     };
   
@@ -241,6 +317,8 @@ const FlowBuilder = () => {
       );
     }
   };
+
+  
 
   /* ---------- Canvis d'arestes: bloquejar 'remove' ---------- */
   const handleEdgesChange = (changes: EdgeChange[]) =>
