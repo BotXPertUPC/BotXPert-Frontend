@@ -3,6 +3,8 @@ import BaseNode from './baseNode';
 
 const QuestionNode = ({ data, selected }: any) => {
   const connections = data.connections || {};
+  const isConnecting = (index: number) =>
+    data.connectOption?.nodeId === data.id && data.connectOption?.optionIndex === index;
 
   return (
     <BaseNode
@@ -21,49 +23,28 @@ const QuestionNode = ({ data, selected }: any) => {
               type="source"
               position={Position.Right}
               id={`option-${i}`}
-              style={{ top: '50%', transform: `translateY(${i * 1.8}rem)`, right: -10 }}
+              style={{ top: '50%', transform: `translateY(-50%)`, right: -10, position: 'absolute' }}
             />
 
             <span className="text-sm text-gray-700">🔹 {opt}</span>
+
             {connections[i] ? (
               <span className="text-xs text-green-600">→ Node {connections[i]}</span>
-            ) : data.connectOption?.nodeId === data.id && data.connectOption?.optionIndex === i ? (
-              <div className="flex flex-col space-y-1">
-                {['missatge', 'resposta', 'final'].map((type) => (
-                  <button
-                    key={type}
-                    className="text-xs text-white bg-blue-500 px-2 py-1 rounded hover:bg-blue-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      data.onConnectOption(data.id, i, type);
-                      data.setConnectOption(null); // tancar menú
-                    }}
-                  >
-                    ➕ {type}
-                  </button>
-                ))}
-                <button
-                  className="text-xs text-gray-500 underline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    data.setConnectOption(null);
-                  }}
-                >
-                  Cancel·lar
-                </button>
-              </div>
             ) : (
               <button
-                className="text-blue-600 text-xs hover:underline"
+                className={`text-xs ${
+                  isConnecting(i)
+                    ? 'text-orange-600 underline font-semibold'
+                    : 'text-blue-600 hover:underline'
+                } ml-2`}
                 onClick={(e) => {
                   e.stopPropagation();
                   data.setConnectOption({ nodeId: data.id, optionIndex: i });
                 }}
               >
-                ➕ Connectar
+                ➕ {isConnecting(i) ? 'Esperant...' : 'Connectar'}
               </button>
             )}
-
           </li>
         ))}
       </ul>
