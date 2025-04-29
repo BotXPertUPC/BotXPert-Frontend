@@ -117,64 +117,160 @@ const FlowBuilder = () => {
 
   const { setCenter } = useReactFlow();
 
+  const [connectOption, setConnectOption] = useState<{
+    nodeId: string;
+    optionIndex: number;
+  } | null>(null);
+
   /* ---------- Helpers ---------- */
   const hasOutgoingEdge = useCallback(
     (id: string) => edges.some((e) => e.source === id),
     [edges],
   );
 
-  /* ---------- Afegir node fill (només un per pare) ---------- */
-  const addNode = (type: string, sourceNodeId: string) => {
-    // No fem res si no tenim ID vàlid
-    if (!sourceNodeId) return;
-  
-    const source = nodes.find((n) => n.id === sourceNodeId);
-    if (!source) return;
-  
-    // Tipus de node que no poden tenir fills
-    const noChildTypes = ['final'];
-  
-    // No permetem afegir si el tipus del node pare és d’aquests
-    if (noChildTypes.includes(source.type || "")) return;
-  
-    // Si ja té una sortida, tampoc deixem afegir-hi més
-    if (hasOutgoingEdge(sourceNodeId)) return;
+  const handleOptionConnect = (fromNodeId: string, optionIndex: number, type: string) => {
+    const newId = String(nodeId);
+    const fromNode = nodes.find((n) => n.id === fromNodeId);
+    if (!fromNode) return;
   
     const newNode: Node = {
-      id: String(nodeId),
+      id: newId,
       type,
       position: {
-        x: source.position.x + 320,
-        y: source.position.y + 100,
+        x: fromNode.position.x + 300,
+        y: fromNode.position.y + optionIndex * 120 + 40,
       },
       data: {
-        label: `Nou estat: ${type}`,
         text: '',
-        options: type === 'pregunta' ? ['Opció 1', 'Opció 2'] : [],
+        id: newId,
+        ...(type === 'pregunta' && {
+          options: ['Opció 1', 'Opció 2'],
+          connections: {},
+          onConnectOption: handleOptionConnect,
+          setConnectOption,
+          connectOption,
+        }),
+      },
+    };
+  
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id === fromNodeId) {
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              connections: {
+                ...(n.data.connections || {}),
+                [optionIndex]: newId,
+              },
+              onConnectOption: handleOptionConnect,
+              setConnectOption,
+              connectOption,
+            },
+          };
+        }
+        return n;
+      }).concat(newNode)
+    );
+  
+    setEdges((eds) => [
+      ...eds,
+      {
+        id: `e${fromNodeId}-${newId}`,
+        source: fromNodeId,
+        target: newId,
+        type: 'custom',
+        sourceHandle: `option-${optionIndex}`,
+      },
+    ]);
+  
+    setNodeId((id) => id + 1);
+    setSelectedNodeId(newId);
+  };
+  
+
+  /* ---------- Afegir node fill (només un per pare) ---------- */
+  const addNode = (type: string, sourceNodeId: string) => {
+    const source = nodes.find((n) => n.id === sourceNodeId);
+    if (!source) return;
+
+    if (!connectOption && source.type === 'pregunta') {return; }
+  
+    const newId = String(nodeId);
+  
+    const newNode: Node = {
+      id: newId,
+      type,
+      position: {
+        x: source.position.x + 300,
+        y: source.position.y + 100 + Math.random() * 100,
+      },
+      data: {
+        text: '',
+        id: newId,
+        options: type === 'pregunta' ? ['Opció 1', 'Opció 2'] : undefined,
+        connections: type === 'pregunta' ? {} : undefined,
+        onConnectOption: handleOptionConnect,
+        setConnectOption,
+        connectOption,
       },
     };
   
     setNodes((nds) => [...nds, newNode]);
-    setEdges((eds) => [
-      ...eds,
-      {
-        id: `e${sourceNodeId}-${nodeId}`,
-        source: sourceNodeId,
-        target: String(nodeId),
-        type: 'custom',
-      },
-    ]);
-    setCenter(
-      newNode.position.x + 125, // centrem sobre la meitat del node (ample aprox)
-      newNode.position.y + 50,  // centrem una mica més avall per quedar centrat verticalment
-      {
-        zoom: 1, // opcional, pots ajustar-ho segons vulguis
-        duration: 1500, // animació suau
-      }
-    );
+  
+    // 👉 Decide si ve d'una opció d'una pregunta
+    if (connectOption) {
+      const { nodeId: fromId, optionIndex } = connectOption;
+  
+      setEdges((eds) => [
+        ...eds,
+        {
+          id: `e${fromId}-${newId}`,
+          source: fromId,
+          sourceHandle: `option-${optionIndex}`,
+          target: newId,
+          type: 'custom',
+        },
+      ]);
+  
+      // Assigna la connexió a la opció concreta
+      setNodes((nds) =>
+        nds.map((n) => {
+          if (n.id === fromId) {
+            return {
+              ...n,
+              data: {
+                ...n.data,
+                connections: {
+                  ...(n.data.connections || {}),
+                  [optionIndex]: newId,
+                },
+              },
+            };
+          }
+          return n;
+        })
+      );
+  
+      setConnectOption(null); // Netegem després d’afegir
+    } else {
+      // Flux normal, node correlatiu
+      setEdges((eds) => [
+        ...eds,
+        {
+          id: `e${sourceNodeId}-${newId}`,
+          source: sourceNodeId,
+          target: newId,
+          type: 'custom',
+        },
+      ]);
+    }
+  
     setNodeId((id) => id + 1);
-    selectNode(String(nodeId));
+    selectNode(newId);
   };
+  
 
   const deleteNode = (nodeId: string) => {
     if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) {
@@ -242,6 +338,8 @@ const FlowBuilder = () => {
     }
   };
 
+  
+
   /* ---------- Canvis d'arestes: bloquejar 'remove' ---------- */
   const handleEdgesChange = (changes: EdgeChange[]) =>
     setEdges((eds) =>
@@ -281,14 +379,16 @@ const FlowBuilder = () => {
     
     
     
-  useEffect(() => {
-    const rootNodeExists = nodes.some((n) => n.id === ROOT_ID);
-    if (!selectedNodeId && rootNodeExists) {
-      selectNode(ROOT_ID);
-    }
-  }, [selectedNodeId, nodes]);
-  
+    useEffect(() => {
+      const rootNodeExists = nodes.some((n) => n.id === ROOT_ID);
+      if (!selectedNodeId && rootNodeExists) {
+        selectNode(ROOT_ID);
+      }
+    }, [selectedNodeId, nodes]);
+    
 
+
+        
   /* ---------- Render ---------- */
   return (
     <div className="min-h-screen bg-gray-50">
@@ -359,6 +459,9 @@ const FlowBuilder = () => {
     </div>
   );
 };
+
+
+
 
 const ConfigTab = () => (
   <ReactFlowProvider>
