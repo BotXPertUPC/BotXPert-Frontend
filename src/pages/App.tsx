@@ -3,6 +3,7 @@ import MainPage from './MainPage';
 import { Route, Routes } from 'react-router-dom';
 import CreateChatbot from './CreateChatbot';
 import WelcomePage from './WelcomePage';
+import FlowBuilder from './FlowBuilder';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Route path="/" element={<WelcomePage />} />
       <Route path="/create" element={<CreateChatbot />} />
       <Route path="/main" element={<MainPage />} />
+      <Route path="/flow/:id" element={<FlowBuilder />} />
     </Routes>
   );
 }
