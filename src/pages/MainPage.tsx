@@ -1,27 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MessageSquare, Plus, MoreVertical, PenSquare, MessageCircleQuestion as QuestionCircle, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../api';
+import { Botflow } from '../types/models';
 
 function Dashboard() {
   const navigate = useNavigate();
-  const chatbots = [
-    {
-      id: 'nextconsult',
-      name: 'NextConsult',
-      description: 'Assistent virtual per a consultoria inicial en transformació digital i serveis TI'
-    },
-    {
-      id: 'nextcloud',
-      name: 'NextCloud',
-      description: 'Especialitzat en consultoria i manteniment d\'entorns cloud'
-    },
-    {
-      id: 'nextsec',
-      name: 'NextSec',
-      description: 'Bot enfocat a consultoria en ciberseguretat'
-    }
-  ];
+  const [chatbots, setChatbots] = useState<Botflow[]>([]);
 
+  useEffect(() => {
+    const fetchBotflows = async () => {
+      try {
+        const response = await api.get<Botflow[]>(`/api/botflows/`);
+        console.log('API Response:', response.data);
+        setChatbots(response.data);
+      } catch (error) {
+        console.error('Error fetching botflows:', error);
+      }
+    };
+  
+    fetchBotflows();
+  }, []);
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
