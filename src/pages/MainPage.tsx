@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { MessageSquare, Plus, MoreVertical, PenSquare, MessageCircleQuestion as QuestionCircle, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
@@ -93,20 +94,29 @@ function Dashboard() {
                   <PenSquare className="w-5 h-5 text-gray-500" 
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Aquí pots obrir l’editor del bot o el que vulguis
+                    navigate(`/chatbot/${bot.id}/edit`)
                     console.log('Edita', bot.id);
                   }}
                   />
                 </button>
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-500" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Aquí pots obrir un menú, dropdown, etc.
-                    console.log('Menú', bot.id);
-                  }}
-                  />
-                </button>
+                <button
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  const confirmed = window.confirm(`Estàs segur que vols eliminar el chatbot "${bot.name}"?`);
+                  if (confirmed) {
+                    try {
+                      await api.delete(`/api/botflows/${bot.id}/`);
+                      setChatbots((prev) => prev.filter((b) => b.id !== bot.id));
+                    } catch (err) {
+                      console.error('Error esborrant el bot:', err);
+                      alert('No s’ha pogut eliminar el chatbot.');
+                    }
+                  }
+                }}
+              >
+                <Trash2 className="w-5 h-5 text-red-500" />
+              </button>
               </div>
             </div>
           </div>

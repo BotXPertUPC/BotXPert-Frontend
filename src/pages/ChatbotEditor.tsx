@@ -1,43 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Bot } from 'lucide-react';
+import api from '../api';
 
-type Props = {
-  initialName?: string;
-  initialDescription?: string;
-  onSubmit: (data: { name: string; description: string }) => Promise<void>;
-  submitLabel: string;
-};
-
-const ChatbotForm = ({
-  initialName = '',
-  initialDescription = '',
-  onSubmit,
-  submitLabel,
-}: Props) => {
-  const [name, setName] = useState(initialName);
-  const [description, setDescription] = useState(initialDescription);
+const ChatbotEditor = () => {
+  const { id } = useParams<{ id?: string }>();
+  const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(!!id);
 
   useEffect(() => {
-    setName(initialName);
-    setDescription(initialDescription);
-  }, [initialName, initialDescription]);
+    if (id) {
+      const fetchBot = async () => {
+        try {
+          const response = await api.get(`/api/botflows/${id}/`);
+          setName(response.data.name);
+          setDescription(response.data.description);
+        } catch (error) {
+          console.error('Error carregant el bot:', error);
+          alert('No s’ha pogut carregar el chatbot');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchBot();
+    }
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit({ name, description });
+
+    try {
+      if (id) {
+        await api.put(`/api/botflows/${id}/`, { name, description, phone_number: '000000000' });
+      } else {
+        const response = await api.post(`/api/botflows/`, { name, description, phone_number: '000000000' });
+        return navigate(`/chatbot/${response.data.id}`);
+      }
+
+      navigate('/main');
+    } catch (err) {
+      console.error('Error desant el bot:', err);
+      alert('No s’ha pogut desar el chatbot');
+    }
   };
+
+  if (loading) return <p className="p-4">Carregant...</p>;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => window.history.back()}
-                className="text-gray-500 hover:text-gray-700"
-              >
+              <button onClick={() => window.history.back()} className="text-gray-500 hover:text-gray-700">
                 <ArrowLeft className="w-6 h-6" />
               </button>
               <div className="flex items-center gap-3">
@@ -51,7 +68,6 @@ const ChatbotForm = ({
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -88,11 +104,8 @@ const ChatbotForm = ({
           </div>
 
           <div className="text-right">
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-            >
-              {submitLabel}
+            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+              {id ? 'Actualitzar' : 'Crear'}
             </button>
           </div>
         </form>
@@ -101,4 +114,4 @@ const ChatbotForm = ({
   );
 };
 
-export default ChatbotForm;
+export default ChatbotEditor;
