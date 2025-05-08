@@ -77,7 +77,7 @@ function Dashboard() {
 
         {/* Chatbot List */}
         {chatbots.map((bot) => (
-          <div key={bot.id} className="bg-white rounded-lg p-6 mb-4 border hover:shadow-md transition-shadow">
+          <div key={bot.id} className="bg-white rounded-lg p-6 mb-4 border hover:shadow-md transition-shadow" onClick={() => navigate(`/chatbot/${bot.id}`)}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="bg-gray-100 p-2 rounded-lg">
@@ -90,10 +90,22 @@ function Dashboard() {
               </div>
               <div className="flex items-center gap-3">
                 <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <PenSquare className="w-5 h-5 text-gray-500" />
+                  <PenSquare className="w-5 h-5 text-gray-500" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Aquí pots obrir l’editor del bot o el que vulguis
+                    console.log('Edita', bot.id);
+                  }}
+                  />
                 </button>
                 <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-500" />
+                  <MoreVertical className="w-5 h-5 text-gray-500" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Aquí pots obrir un menú, dropdown, etc.
+                    console.log('Menú', bot.id);
+                  }}
+                  />
                 </button>
               </div>
             </div>
