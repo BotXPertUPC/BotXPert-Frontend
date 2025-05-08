@@ -27,12 +27,14 @@ const BaseNode = ({
       ${backgroundColor} ${borderColor}
       ${selected ? 'ring-2 ring-blue-400' : ''}
     `}>
-      {icon && <div className="text-2xl mb-1">{icon}</div>}
+      {icon && <div className="text-2xl mb-1" style={{ fontSize: '24px', color: 'inherit' }}>{icon}</div>}
       {children}
       {showTarget && <Handle type="target" position={Position.Left} />}
       {showSource && <Handle type="source" position={Position.Right} />}
     </div>
   );
 };
+
+BaseNode.visible = true;
 
 export default BaseNode;

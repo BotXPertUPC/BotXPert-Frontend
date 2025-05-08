@@ -118,14 +118,14 @@ function WelcomePage() {
                     <div className="max-container">
                         <div className="bg-[#001f3f]/40 rounded-xl p-4 backdrop-blur-sm">
                             <img
-                                src="https://images.unsplash.com/photo-1618788372246-79faff0c3742?auto=format&fit=crop&w=1200&q=80"
+                                src="/BotPresentació.jpg"
                                 alt="UI Design Interface"
                                 className="w-full rounded-lg shadow-2xl"
                             />
                             <div className="flex justify-between items-center mt-4">
                                 <div className="flex space-x-4"></div>
                                     <button className="nav-link">
-                                        <Heart className="w-5 h-5" />
+                                        <Heart className="w-5 h-5 fill-current text-red-500" />
                                     </button>
                                     <button className="nav-link">
                                         <Share2 className="w-5 h-5" />

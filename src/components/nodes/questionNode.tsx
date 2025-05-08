@@ -54,4 +54,12 @@ const QuestionNode = ({ data, selected }: any) => {
   );
 };
 
+// Metadades del node encapsulades en un objecte separat
+QuestionNode.metadata = {
+  type: 'pregunta',
+  icon: '❓',
+  name: 'Pregunta',
+  visible: true,
+};
+
 export default QuestionNode;
