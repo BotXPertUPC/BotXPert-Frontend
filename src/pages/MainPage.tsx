@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { MessageSquare, Plus, MoreVertical, PenSquare, MessageCircleQuestion as QuestionCircle, UserCircle } from 'lucide-react';
+import { MessageSquare, Plus, PenSquare, MessageCircleQuestion as QuestionCircle, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Botflow } from '../types/models';
+import { useMasterPassword } from '../context/MasterPasswordContext';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { setIsAuthenticated } = useMasterPassword();
   const [chatbots, setChatbots] = useState<Botflow[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [botToDelete, setBotToDelete] = useState<Botflow | null>(null);
@@ -29,6 +31,11 @@ function Dashboard() {
         setBotToDelete(null);
       }
     }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    navigate('/login');
   };
 
   useEffect(() => {
@@ -66,6 +73,12 @@ function Dashboard() {
           <div className="flex items-center gap-4">
             <QuestionCircle className="w-6 h-6 text-gray-500" />
             <UserCircle className="w-8 h-8 text-gray-500" />
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </header>

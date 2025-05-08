@@ -5,16 +5,19 @@ import WelcomePage from './WelcomePage';
 import FlowBuilder from './FlowBuilder';
 import ChatbotDetail from './ChatbotDetail';
 import ChatbotEditor from './ChatbotEditor';
+import ProtectedRoute from '../components/ProtectedRoute';
+import LoginPage from './LoginPage';
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<WelcomePage />} />
-      <Route path="/create" element={<ChatbotEditor  />} />
-      <Route path="/main" element={<MainPage />} />
-      <Route path="/flow/:id" element={<FlowBuilder />} />
-      <Route path="/chatbot/:id" element={<ChatbotDetail />} />
-      <Route path="/chatbot/:id/edit" element={<ChatbotEditor  />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/create" element={<ProtectedRoute><ChatbotEditor /></ProtectedRoute>} />
+      <Route path="/main" element={<ProtectedRoute><MainPage /></ProtectedRoute>} />
+      <Route path="/flow/:id" element={<ProtectedRoute><FlowBuilder /></ProtectedRoute>} />
+      <Route path="/chatbot/:id" element={<ProtectedRoute><ChatbotDetail /></ProtectedRoute>} />
+      <Route path="/chatbot/:id/edit" element={<ProtectedRoute><ChatbotEditor /></ProtectedRoute>} />
     </Routes>
   );
 }
