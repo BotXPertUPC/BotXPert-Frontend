@@ -35,4 +35,6 @@ const BaseNode = ({
   );
 };
 
+BaseNode.visible = true;
+
 export default BaseNode;

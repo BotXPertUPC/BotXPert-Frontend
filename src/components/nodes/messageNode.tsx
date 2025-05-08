@@ -7,12 +7,12 @@ const MessageNode = ({ data, selected }: any) => (
   </BaseNode>
 );
 
-// Afegim metadades al node
+// Metadades del node encapsulades en un objecte separat
 MessageNode.metadata = {
   type: 'missatge',
   icon: '💬',
   name: 'Missatge',
-  visible: true, // Controla si el node és visible o no
+  visible: true,
 };
 
 export default MessageNode;

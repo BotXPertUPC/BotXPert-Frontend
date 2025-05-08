@@ -406,16 +406,15 @@ const FlowBuilder = () => {
         <div className="w-72 bg-white border-r p-6 space-y-4">
           <p className="text-base font-semibold text-gray-700 mb-4">Afegeix node</p>
           {Object.entries(nodeTypes)
-            .filter(([key, NodeComponent]) => NodeComponent.metadata?.visible)
+            .filter(([key, NodeComponent]) => NodeComponent.metadata.visible)
             .map(([key, NodeComponent]) => {
-              const metadata = NodeComponent.metadata;
               return (
                 <button
-                  key={metadata.type}
-                  onClick={() => selectedNodeId && addNode(metadata.type, selectedNodeId)}
+                  key={NodeComponent.metadata.type}
+                  onClick={() => selectedNodeId && addNode(NodeComponent.metadata.type, selectedNodeId)}
                   className="w-full text-left px-4 py-3 rounded-lg text-base bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition"
                 >
-                  {metadata.icon} {metadata.name}
+                  {NodeComponent.metadata.icon} {NodeComponent.metadata.name}
                 </button>
               );
             })}

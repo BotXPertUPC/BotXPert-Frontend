@@ -6,7 +6,7 @@ const FinalNode = ({ data, selected }: any) => (
   </BaseNode>
 );
 
-// Afegim metadades al node
+// Metadades del node encapsulades en un objecte separat
 FinalNode.metadata = {
   type: 'final',
   icon: '🏁',

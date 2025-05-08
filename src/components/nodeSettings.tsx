@@ -27,7 +27,7 @@ const NodeSettings = ({ node, onChange, onDelete }: Props) => {
       onChange({ ...node, data: { ...node.data, text: inputValue } });
     }, 250);
     return () => clearTimeout(timeout);
-  }, [inputValue]);
+  }, [inputValue, node, onChange]); // Added 'node' and 'onChange' to the dependency array
 
   if (!node) return null;
 
