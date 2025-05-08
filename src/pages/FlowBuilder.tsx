@@ -421,7 +421,7 @@ const FlowBuilder = () => {
       </div>
 
       {/* Diagrama central */}
-      <div className="flex-1 bg-white rounded-lg p-6 shadow-sm relative h-full">
+      <div className="flex-1 bg-white rounded-lg p-0 shadow-sm relative h-full">
         <ReactFlow
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
