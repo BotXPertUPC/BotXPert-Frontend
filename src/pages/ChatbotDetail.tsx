@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Bot, Save, Rocket } from 'lucide-react';
-import CreateTab from './CreateTab';
 import FlowBuilder from './FlowBuilder';
 
 function CreateChatbot() {
