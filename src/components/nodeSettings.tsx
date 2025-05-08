@@ -58,8 +58,8 @@ const NodeSettings = ({ node, onChange, onDelete }: Props) => {
         </button>
       </div>
 
-      {/* Camp de text per missatge, pregunta, condicional, resposta */}
-      {['missatge', 'pregunta', 'condicional', 'resposta'].includes(node.type || '') && (
+      {/* Camp de text per missatge, pregunta, resposta */}
+      {['missatge', 'pregunta', 'resposta'].includes(node.type || '') && (
         <>
           <label className="text-sm font-medium block mb-1">
             {node.type === 'pregunta' ? 'Pregunta' : 'Text'}

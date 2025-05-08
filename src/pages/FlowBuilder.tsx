@@ -26,7 +26,6 @@ import StartNode from '../components/nodes/startNode';
 import MessageNode from '../components/nodes/messageNode';
 import QuestionNode from '../components/nodes/questionNode';
 import FinalNode from '../components/nodes/finalNode';
-import CondicionalNode from '../components/nodes/condicionalNode';
 import RespostaNode from '../components/nodes/respostaNode';
 import NodeSettings from '../components/nodeSettings';
 
@@ -34,7 +33,6 @@ const nodeTypes = {
   inici: StartNode,
   missatge: MessageNode,
   pregunta: QuestionNode,
-  condicional: CondicionalNode,
   resposta: RespostaNode,
   final: FinalNode,
 };
@@ -404,69 +402,68 @@ const FlowBuilder = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="flex h-screen">
-      {/* Sidebar esquerra amb botons */}
-      <div className="w-72 bg-white border-r p-6 space-y-4">
-        <p className="text-base font-semibold text-gray-700 mb-4">Afegeix node</p>
-        {['missatge', 'pregunta', 'condicional', 'resposta', 'final'].map((type) => (
-          <button
-            key={type}
-            onClick={() => selectedNodeId && addNode(type, selectedNodeId)}
-            className="w-full text-left px-4 py-3 rounded-lg text-base bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition"
+        {/* Sidebar esquerra amb botons */}
+        <div className="w-72 bg-white border-r p-6 space-y-4">
+          <p className="text-base font-semibold text-gray-700 mb-4">Afegeix node</p>
+          {Object.entries(nodeTypes)
+            .filter(([key, NodeComponent]) => NodeComponent.metadata?.visible)
+            .map(([key, NodeComponent]) => {
+              const metadata = NodeComponent.metadata;
+              return (
+                <button
+                  key={metadata.type}
+                  onClick={() => selectedNodeId && addNode(metadata.type, selectedNodeId)}
+                  className="w-full text-left px-4 py-3 rounded-lg text-base bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition"
+                >
+                  {metadata.icon} {metadata.name}
+                </button>
+              );
+            })}
+        </div>
+
+        {/* Diagrama central */}
+        <div className="flex-1 bg-white rounded-lg p-0 shadow-sm relative h-full">
+          <ReactFlow
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={handleNodesChange}
+            onEdgesChange={handleEdgesChange}
+            onConnect={handleConnect}
+            onNodeClick={(_, node) => selectNode(node.id)}
+            onNodeDragStart={(_, node) => selectNode(node.id)}
+            fitView
+            deleteKeyCode={null} // Disable default delete key behavior
           >
-            {type === 'missatge' && '💬 Missatge'}
-            {type === 'pregunta' && '❓ Pregunta'}
-            {type === 'condicional' && '🔀 Condicional'}
-            {type === 'resposta' && '✍️ Resposta'}
-            {type === 'final' && '🏁 Final'}
-          </button>
-        ))}
-      </div>
-
-      {/* Diagrama central */}
-      <div className="flex-1 bg-white rounded-lg p-0 shadow-sm relative h-full">
-        <ReactFlow
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={handleNodesChange}
-          onEdgesChange={handleEdgesChange}
-          onConnect={handleConnect}
-          onNodeClick={(_, node) => selectNode(node.id)}
-          onNodeDragStart={(_, node) => selectNode(node.id)}
-          fitView
-          deleteKeyCode={null} // Disable default delete key behavior
-        >
-          <MiniMap />
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </div>
-
-      {/* Panell de configuració dret */}
-      {selectedNodeId && (
-        <div className="w-80 bg-white border-l p-4 shadow h-full overflow-y-auto">
-          <NodeSettings
-            node={nodes.find((n) => n.id === selectedNodeId) || null}
-            onChange={(updatedNode) =>
-              setNodes((nds) =>
-                nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
-              )
-            }
-            onDelete={deleteNode}
-          />
+            <MiniMap />
+            <Controls />
+            <Background />
+          </ReactFlow>
         </div>
-      )}
-        
-      {/* Toast d'error */}
-      {toast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow z-50 animate-fadeIn">
-          {toast}
-        </div>
-      )}
 
-    </main>
+        {/* Panell de configuració dret */}
+        {selectedNodeId && (
+          <div className="w-80 bg-white border-l p-4 shadow h-full overflow-y-auto">
+            <NodeSettings
+              node={nodes.find((n) => n.id === selectedNodeId) || null}
+              onChange={(updatedNode) =>
+                setNodes((nds) =>
+                  nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+                )
+              }
+              onDelete={deleteNode}
+            />
+          </div>
+        )}
 
+        {/* Toast d'error */}
+        {toast && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow z-50 animate-fadeIn">
+            {toast}
+          </div>
+        )}
+      </main>
     </div>
   );
 };

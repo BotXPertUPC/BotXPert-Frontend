@@ -54,4 +54,12 @@ const QuestionNode = ({ data, selected }: any) => {
   );
 };
 
+// Afegim metadades al node
+QuestionNode.metadata = {
+  type: 'pregunta',
+  icon: '❓',
+  name: 'Pregunta',
+  visible: true, // Controla si el node és visible o no
+};
+
 export default QuestionNode;

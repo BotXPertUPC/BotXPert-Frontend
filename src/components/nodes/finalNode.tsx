@@ -6,4 +6,12 @@ const FinalNode = ({ data, selected }: any) => (
   </BaseNode>
 );
 
+// Afegim metadades al node
+FinalNode.metadata = {
+  type: 'final',
+  icon: '🏁',
+  name: 'Final',
+  visible: true,
+};
+
 export default FinalNode;

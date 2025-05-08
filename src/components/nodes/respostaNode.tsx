@@ -7,4 +7,12 @@ const RespostaNode = ({ data, selected }: any) => (
   </BaseNode>
 );
 
+// Afegim metadades al node
+RespostaNode.metadata = {
+  type: 'resposta',
+  icon: '✍️',
+  name: 'Resposta',
+  visible: true, // Controla si el node és visible o no
+};
+
 export default RespostaNode;
