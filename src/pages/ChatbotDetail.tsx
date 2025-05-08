@@ -59,25 +59,10 @@ function CreateChatbot() {
       </header>
 
       {/* Tabs */}
-      <div className="border-b bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <nav className="flex gap-8">
-            <button
-              onClick={() => setActiveTab('configurar')}
-              className={`py-4 px-2 border-b-2 font-medium ${
-                activeTab === 'configurar'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Configurar
-            </button>
-          </nav>
-        </div>
-      </div>
+      
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="px-4 py-8">
           <FlowBuilder />
       </main>
 

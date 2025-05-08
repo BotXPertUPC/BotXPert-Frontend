@@ -267,6 +267,15 @@ const FlowBuilder = () => {
       ]);
     }
   
+    setCenter(
+      newNode.position.x + 125, // centrem sobre la meitat del node (ample aprox)
+      newNode.position.y + 50,  // centrem una mica més avall per quedar centrat verticalment
+      {
+        zoom: 1, // opcional, pots ajustar-ho segons vulguis
+        duration: 1500, // animació suau
+      }
+    );
+    
     setNodeId((id) => id + 1);
     selectNode(newId);
   };
@@ -394,13 +403,13 @@ const FlowBuilder = () => {
     <div className="min-h-screen bg-gray-50">
       <main className="flex h-screen">
       {/* Sidebar esquerra amb botons */}
-      <div className="w-56 bg-white border-r p-4 space-y-2">
-        <p className="text-sm font-semibold text-gray-700 mb-2">Afegeix node</p>
+      <div className="w-72 bg-white border-r p-6 space-y-4">
+        <p className="text-base font-semibold text-gray-700 mb-4">Afegeix node</p>
         {['missatge', 'pregunta', 'condicional', 'resposta', 'final'].map((type) => (
           <button
             key={type}
             onClick={() => selectedNodeId && addNode(type, selectedNodeId)}
-            className="w-full text-left px-3 py-2 rounded-lg text-sm bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition"
+            className="w-full text-left px-4 py-3 rounded-lg text-base bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition"
           >
             {type === 'missatge' && '💬 Missatge'}
             {type === 'pregunta' && '❓ Pregunta'}

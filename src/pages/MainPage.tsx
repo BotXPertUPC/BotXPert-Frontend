@@ -8,6 +8,28 @@ import { Botflow } from '../types/models';
 function Dashboard() {
   const navigate = useNavigate();
   const [chatbots, setChatbots] = useState<Botflow[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [botToDelete, setBotToDelete] = useState<Botflow | null>(null);
+
+  const handleDeleteClick = (bot: Botflow) => {
+    setBotToDelete(bot);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (botToDelete) {
+      try {
+        await api.delete(`/api/botflows/${botToDelete.id}/`);
+        setChatbots((prev) => prev.filter((b) => b.id !== botToDelete.id));
+      } catch (err) {
+        console.error('Error esborrant el bot:', err);
+        alert('No s’ha pogut eliminar el chatbot.');
+      } finally {
+        setShowDeleteModal(false);
+        setBotToDelete(null);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchBotflows = async () => {
@@ -100,28 +122,41 @@ function Dashboard() {
                   />
                 </button>
                 <button
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  const confirmed = window.confirm(`Estàs segur que vols eliminar el chatbot "${bot.name}"?`);
-                  if (confirmed) {
-                    try {
-                      await api.delete(`/api/botflows/${bot.id}/`);
-                      setChatbots((prev) => prev.filter((b) => b.id !== bot.id));
-                    } catch (err) {
-                      console.error('Error esborrant el bot:', err);
-                      alert('No s’ha pogut eliminar el chatbot.');
-                    }
-                  }
-                }}
-              >
-                <Trash2 className="w-5 h-5 text-red-500" />
-              </button>
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(bot);
+                  }}
+                >
+                  <Trash2 className="w-5 h-5 text-red-500" />
+                </button>
               </div>
             </div>
           </div>
         ))}
       </main>
+
+      {/* Delete Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Confirmació</h2>
+            <p>Estàs segur que vols eliminar el chatbot "{botToDelete?.name}"?</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button 
+                onClick={() => setShowDeleteModal(false)} 
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">
+                Cancel·lar
+              </button>
+              <button 
+                onClick={confirmDelete} 
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
