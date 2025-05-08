@@ -3,7 +3,6 @@ import { ArrowLeft, Bot, Save, Rocket } from 'lucide-react';
 import FlowBuilder from './FlowBuilder';
 
 function CreateChatbot() {
-  const [activeTab, setActiveTab] = useState('crear');
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showDeployModal, setShowDeployModal] = useState(false);
 

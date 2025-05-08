@@ -110,10 +110,11 @@ const FlowBuilder = () => {
   const [nodeId, setNodeId] = useState(2);
   const [toast, setToast] = useState<string | null>(null);
 
-  const showToast = (msg: string) => {
+  // Wrapped 'showToast' in useCallback to prevent it from changing on every render
+  const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
-  };
+  }, []);
 
   const { setCenter } = useReactFlow();
 
@@ -281,7 +282,8 @@ const FlowBuilder = () => {
   };
   
 
-  const deleteNode = (nodeId: string) => {
+  // Wrapped 'deleteNode' in useCallback to prevent it from changing on every render
+  const deleteNode = useCallback((nodeId: string) => {
     if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) {
       showToast("No pots esborrar aquest node.");
       return;
@@ -305,7 +307,7 @@ const FlowBuilder = () => {
     }
   
     selectNode(parentNodeId);
-  };
+  }, [edges, hasOutgoingEdge, nodes, setCenter, showToast]);
   
 
   /* ---------- Connexió drag‑and‑drop ---------- */
@@ -384,7 +386,7 @@ const FlowBuilder = () => {
     
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedNodeId, nodes, edges]);
+    }, [selectedNodeId, nodes, edges, deleteNode]);
     
     
     
