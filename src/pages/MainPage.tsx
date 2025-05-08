@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { MessageSquare, Plus, MoreVertical, PenSquare, MessageCircleQuestion as QuestionCircle, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
@@ -77,7 +78,7 @@ function Dashboard() {
 
         {/* Chatbot List */}
         {chatbots.map((bot) => (
-          <div key={bot.id} className="bg-white rounded-lg p-6 mb-4 border hover:shadow-md transition-shadow">
+          <div key={bot.id} className="bg-white rounded-lg p-6 mb-4 border hover:shadow-md transition-shadow" onClick={() => navigate(`/chatbot/${bot.id}`)}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="bg-gray-100 p-2 rounded-lg">
@@ -90,11 +91,32 @@ function Dashboard() {
               </div>
               <div className="flex items-center gap-3">
                 <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <PenSquare className="w-5 h-5 text-gray-500" />
+                  <PenSquare className="w-5 h-5 text-gray-500" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/chatbot/${bot.id}/edit`)
+                    console.log('Edita', bot.id);
+                  }}
+                  />
                 </button>
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-500" />
-                </button>
+                <button
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  const confirmed = window.confirm(`Estàs segur que vols eliminar el chatbot "${bot.name}"?`);
+                  if (confirmed) {
+                    try {
+                      await api.delete(`/api/botflows/${bot.id}/`);
+                      setChatbots((prev) => prev.filter((b) => b.id !== bot.id));
+                    } catch (err) {
+                      console.error('Error esborrant el bot:', err);
+                      alert('No s’ha pogut eliminar el chatbot.');
+                    }
+                  }
+                }}
+              >
+                <Trash2 className="w-5 h-5 text-red-500" />
+              </button>
               </div>
             </div>
           </div>
