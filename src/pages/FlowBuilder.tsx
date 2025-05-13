@@ -1,5 +1,5 @@
 // src/pages/FlowBuilder.tsx
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useImperativeHandle } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import ReactFlow, {
   addEdge,
@@ -21,19 +21,21 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-
 import StartNode from '../components/nodes/startNode';
 import MessageNode from '../components/nodes/messageNode';
 import QuestionNode from '../components/nodes/questionNode';
 import FinalNode from '../components/nodes/finalNode';
 import RespostaNode from '../components/nodes/respostaNode';
+import ImageNode from '../components/nodes/imageNode';
 import NodeSettings from '../components/nodeSettings';
+import { flowService } from '../services/flowService';
 
 const nodeTypes = {
   inici: StartNode,
   missatge: MessageNode,
   pregunta: QuestionNode,
   resposta: RespostaNode,
+  imatge: ImageNode,
   final: FinalNode,
 };
 
@@ -94,7 +96,8 @@ const CustomEdge = ({
 const edgeTypes = { custom: CustomEdge };
 const ROOT_ID = '1';
 
-const FlowBuilder = () => {
+const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
+  const { botflowId } = props;
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [nodes, setNodes] = useState<Node[]>([
     {
@@ -107,6 +110,15 @@ const FlowBuilder = () => {
   const [edges, setEdges] = useState<Edge[]>([]);
   const [nodeId, setNodeId] = useState(2);
   const [toast, setToast] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    getNodes: () => nodes,
+    getEdges: () => edges,
+    setNodes: (newNodes: Node[]) => setNodes(newNodes),
+    setEdges: (newEdges: Edge[]) => setEdges(newEdges)
+  }));
 
   // Wrapped 'showToast' in useCallback to prevent it from changing on every render
   const showToast = useCallback((msg: string) => {
@@ -131,7 +143,13 @@ const FlowBuilder = () => {
     const newId = String(nodeId);
     const fromNode = nodes.find((n) => n.id === fromNodeId);
     if (!fromNode) return;
-  
+   
+    // Verificar si el nodo origen es un nodo final
+    if (fromNode.type === 'final') {
+      showToast('No se pueden crear conexiones desde un nodo final.');
+      return;
+    }
+ 
     const newNode: Node = {
       id: newId,
       type,
@@ -151,16 +169,19 @@ const FlowBuilder = () => {
         }),
       },
     };
-  
+ 
+    // Actualizar el nodo origen con la nueva conexión
     setNodes((nds) =>
       nds.map((n) => {
         if (n.id === fromNodeId) {
+          // Preservar todas las conexiones existentes y añadir la nueva
+          const currentConnections = n.data.connections || {};
           return {
             ...n,
             data: {
               ...n.data,
               connections: {
-                ...(n.data.connections || {}),
+                ...currentConnections,
                 [optionIndex]: newId,
               },
               onConnectOption: handleOptionConnect,
@@ -172,7 +193,7 @@ const FlowBuilder = () => {
         return n;
       }).concat(newNode)
     );
-  
+ 
     setEdges((eds) => [
       ...eds,
       {
@@ -183,21 +204,55 @@ const FlowBuilder = () => {
         sourceHandle: `option-${optionIndex}`,
       },
     ]);
-  
+ 
     setNodeId((id) => id + 1);
     setSelectedNodeId(newId);
   };
-  
+
 
   /* ---------- Afegir node fill (només un per pare) ---------- */
   const addNode = (type: string, sourceNodeId: string) => {
     const source = nodes.find((n) => n.id === sourceNodeId);
     if (!source) return;
 
-    if (!connectOption && source.type === 'pregunta') {return; }
-  
+
+    // Verificar si el nodo origen es un nodo final
+    // Los nodos finales NO deben tener ningún tipo de nodo conectado a ellos
+    if (source.type === 'final') {
+      showToast('No se pueden crear nodos a partir de un nodo final. Los nodos finales deben ser terminales.');
+      return;
+    }
+
+
+    if (!connectOption && source.type === 'pregunta') {
+      return;
+    }
+
+
+    // Validaciones para nodos finales
+    if (type === 'final') {
+      // Verificar si ya existe un nodo final que viene del mismo nodo origen
+      const alreadyHasFinalNode = nodes
+        .filter(node => node.type === 'final')
+        .some(node => edges.some(edge => edge.source === sourceNodeId && edge.target === node.id));
+     
+      if (alreadyHasFinalNode) {
+        showToast('Este nodo ya tiene un nodo final conectado.');
+        return;
+      }
+     
+      // Verificar que el nodo origen está conectado al flujo (tiene entrada)
+      const isNodeConnected = sourceNodeId === ROOT_ID || edges.some(edge => edge.target === sourceNodeId);
+      if (!isNodeConnected) {
+        showToast('No puedes crear un nodo final desde un nodo sin conexión de entrada.');
+        return;
+      }
+    }
+
+
     const newId = String(nodeId);
-  
+
+
     const newNode: Node = {
       id: newId,
       type,
@@ -210,14 +265,25 @@ const FlowBuilder = () => {
         id: newId,
         options: type === 'pregunta' ? ['Opció 1', 'Opció 2'] : undefined,
         connections: type === 'pregunta' ? {} : undefined,
+        ...(type === 'imatge' && {
+          imageUrl: '',
+          altText: '',
+        }),
         onConnectOption: handleOptionConnect,
         setConnectOption,
         connectOption,
+        onChange: (updatedData: any) => {
+          setNodes((nds) =>
+            nds.map((n) => (n.id === newId ? { ...n, data: { ...n.data, ...updatedData } } : n))
+          );
+        },
       },
     };
-  
+
+
     setNodes((nds) => [...nds, newNode]);
-  
+
+
     // 👉 Decide si ve d'una opció d'una pregunta
     if (connectOption) {
       const { nodeId: fromId, optionIndex } = connectOption;
@@ -265,7 +331,8 @@ const FlowBuilder = () => {
         },
       ]);
     }
-  
+
+
     setCenter(
       newNode.position.x + 125, // centrem sobre la meitat del node (ample aprox)
       newNode.position.y + 50,  // centrem una mica més avall per quedar centrat verticalment
@@ -274,11 +341,11 @@ const FlowBuilder = () => {
         duration: 1500, // animació suau
       }
     );
-    
+   
     setNodeId((id) => id + 1);
     selectNode(newId);
   };
-  
+
 
   // Wrapped 'deleteNode' in useCallback to prevent it from changing on every render
   const deleteNode = useCallback((nodeId: string) => {
@@ -286,13 +353,13 @@ const FlowBuilder = () => {
       showToast("No pots esborrar aquest node.");
       return;
     }
-  
+ 
     const parentEdge = edges.find((e) => e.target === nodeId);
     const parentNodeId = parentEdge ? parentEdge.source : null;
-  
+ 
     setNodes((nds) => nds.filter((n) => n.id !== nodeId));
     setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
-  
+ 
     if (parentNodeId) {
       const parentNode = nodes.find((n) => n.id === parentNodeId);
       if (parentNode) {
@@ -303,16 +370,17 @@ const FlowBuilder = () => {
         );
       }
     }
-  
+ 
     selectNode(parentNodeId);
   }, [edges, hasOutgoingEdge, nodes, setCenter, showToast]);
-  
+
 
   /* ---------- Connexió drag‑and‑drop ---------- */
   const handleConnect = (params: Connection) => {
     if (!params.source || hasOutgoingEdge(params.source)) return;
     setEdges((eds) => addEdge({ ...params, type: 'custom' }, eds));
   };
+
 
   /* ---------- Canvis de nodes ---------- */
   const handleNodesChange = (changes: NodeChange[]) => {
@@ -329,13 +397,16 @@ const FlowBuilder = () => {
       return c;
     });
 
+
     setNodes((nds) => applyNodeChanges(transformed, nds));
+
 
     /* 2. Quins nodes s'han eliminat realment?  */
     const removedIds = changes
       .filter((c): c is NodeRemoveChange => c.type === 'remove')
       .map((c) => c.id)
       .filter((id) => id !== ROOT_ID && !hasOutgoingEdge(id));
+
 
     /* 3. Esborrem les arestes que tocaven els nodes eliminats */
     if (removedIds.length) {
@@ -347,7 +418,6 @@ const FlowBuilder = () => {
     }
   };
 
-  
 
   /* ---------- Canvis d'arestes: bloquejar 'remove' ---------- */
   const handleEdgesChange = (changes: EdgeChange[]) =>
@@ -357,50 +427,189 @@ const FlowBuilder = () => {
         eds,
       ),
     );
-  
-    const selectNode = (nodeId: string | null) => {
-      setSelectedNodeId(nodeId);
-    
-      setNodes((nds) =>
-        nds.map((n) => ({
-          ...n,
-          selected: n.id === nodeId,
-        }))
-      );
-    };
-    
-    useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        // Si el focus està en un input, textarea o select, no fem res
-        const tag = (e.target as HTMLElement).tagName.toLowerCase();
-        if (['input', 'textarea', 'select'].includes(tag)) return;
-    
-        // Si s'ha premut Delete o Backspace
-        if (e.key === 'Delete' || e.key === 'Backspace') {
-          if (!selectedNodeId) return;
-          deleteNode(selectedNodeId);
-        }
-      };
-    
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedNodeId, nodes, edges, deleteNode]);
-    
-    
-    
-    useEffect(() => {
-      const rootNodeExists = nodes.some((n) => n.id === ROOT_ID);
-      if (!selectedNodeId && rootNodeExists) {
-        selectNode(ROOT_ID);
+ 
+  const selectNode = (nodeId: string | null) => {
+    setSelectedNodeId(nodeId);
+ 
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        selected: n.id === nodeId,
+      }))
+    );
+  };
+ 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Si el focus està en un input, textarea o select, no fem res
+      const tag = (e.target as HTMLElement).tagName.toLowerCase();
+      if (['input', 'textarea', 'select'].includes(tag)) return;
+ 
+      // Si s'ha premut Delete o Backspace
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (!selectedNodeId) return;
+        deleteNode(selectedNodeId);
       }
-    }, [selectedNodeId, nodes]);
-    
+    };
+ 
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNodeId, nodes, edges, deleteNode]);
+ 
+ 
+ 
+  useEffect(() => {
+    const rootNodeExists = nodes.some((n) => n.id === ROOT_ID);
+    if (!selectedNodeId && rootNodeExists) {
+      selectNode(ROOT_ID);
+    }
+  }, [selectedNodeId, nodes]);
 
+  // Cargar datos al iniciar si hay botflowId
+  useEffect(() => {
+    if (botflowId) {
+      loadFlowData(botflowId);
+    }
+  }, [botflowId]);
 
+  // Función para cargar datos del backend
+  const loadFlowData = async (botflowId: number) => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const backendNodes = await flowService.loadFlowNodes(botflowId);
+      
+      // Solo reemplazar los nodos si obtenemos datos válidos del backend
+      if (backendNodes && Array.isArray(backendNodes) && backendNodes.length > 0) {
+        // Aquí convertimos los nodos del backend al formato de ReactFlow
+        const reactFlowNodes: Node[] = [];
+        const reactFlowEdges: Edge[] = [];
         
+        // Crear un mapa para convertir los tipos del backend a ReactFlow
+        const nodeTypeMap: Record<string, string> = {
+          'START': 'inici',
+          'TEXT': 'missatge', // Por defecto, puede cambiar según el contenido
+          'LIST': 'pregunta',
+          'END': 'final'
+        };
+        
+        // Procesar cada nodo del backend
+        backendNodes.forEach((backendNode: any) => {
+          // Determinar el tipo real basado en contenido o metadata
+          let nodeType = nodeTypeMap[backendNode.type] || 'missatge';
+          let nodeData: any = { text: backendNode.text || '' };
+          
+          // Procesar nodos de tipo TEXT para detectar imágenes
+          if (backendNode.type === 'TEXT' && backendNode.text) {
+            try {
+              const jsonData = JSON.parse(backendNode.text);
+              if (jsonData.type === 'image') {
+                nodeType = 'imatge';
+                nodeData = {
+                  imageUrl: jsonData.url || '',
+                  altText: jsonData.alt || ''
+                };
+              }
+            } catch (e) {
+              // Si no es JSON, es texto normal
+            }
+          }
+          
+          // Si es un nodo de pregunta, configurar opciones
+          if (backendNode.type === 'LIST') {
+            nodeType = 'pregunta';
+            nodeData = {
+              text: backendNode.list_header || '',
+              options: [], // Se añadirán según las opciones de la lista
+              connections: {}
+            };
+            
+            // Procesar opciones si existen
+            if (backendNode.list_options && Array.isArray(backendNode.list_options)) {
+              nodeData.options = backendNode.list_options.map((opt: any) => opt.label);
+              
+              // Crear conexiones para cada opción
+              backendNode.list_options.forEach((opt: any, idx: number) => {
+                if (opt.target_node) {
+                  nodeData.connections[idx] = String(opt.target_node);
+                  
+                  // Crear borde para esta conexión
+                  reactFlowEdges.push({
+                    id: `e${backendNode.id}-${opt.target_node}`,
+                    source: String(backendNode.id),
+                    target: String(opt.target_node),
+                    sourceHandle: `option-${idx}`,
+                    type: 'custom'
+                  });
+                }
+              });
+            }
+          }
+          
+          // Crear el nodo de ReactFlow
+          reactFlowNodes.push({
+            id: String(backendNode.id),
+            type: nodeType,
+            position: {
+              x: backendNode.position_x || 100,
+              y: backendNode.position_y || 100
+            },
+            data: {
+              ...nodeData,
+              id: String(backendNode.id),
+              onConnectOption: handleOptionConnect,
+              setConnectOption,
+              connectOption
+            }
+          });
+          
+          // Si tiene next_node, crear una conexión
+          if (backendNode.next_node && backendNode.type !== 'LIST') {
+            reactFlowEdges.push({
+              id: `e${backendNode.id}-${backendNode.next_node}`,
+              source: String(backendNode.id),
+              target: String(backendNode.next_node),
+              type: 'custom'
+            });
+          }
+        });
+        
+        // Actualizar estado con los nuevos nodos y bordes
+        if (reactFlowNodes.length > 0) {
+          setNodes(reactFlowNodes);
+          setEdges(reactFlowEdges);
+          
+          // Actualizar el contador de nodeId al máximo id + 1
+          const maxId = Math.max(...reactFlowNodes.map(node => parseInt(node.id)));
+          setNodeId(maxId + 1);
+        }
+      }
+    } catch (error) {
+      console.error("Error cargando datos:", error);
+      setLoadError("No se pudieron cargar los datos del flujo.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   /* ---------- Render ---------- */
   return (
     <div className="min-h-screen bg-gray-50">
+      {isLoading && (
+        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-blue-600 font-medium">Cargando flujo...</p>
+          </div>
+        </div>
+      )}
+      
+      {loadError && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow z-50">
+          {loadError}
+        </div>
+      )}
+
       <main className="flex h-screen">
         {/* Sidebar esquerra amb botons */}
         <div className="w-72 bg-white border-r p-6 space-y-4">
@@ -408,17 +617,26 @@ const FlowBuilder = () => {
           {Object.entries(nodeTypes)
             .filter(([key, NodeComponent]) => NodeComponent.metadata.visible)
             .map(([key, NodeComponent]) => {
+              // Obtener el nodo seleccionado para verificaciones adicionales
+              const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) : null;
+             
+              // Deshabilitar el botón si estamos intentando agregar un nodo a un nodo final
+              const isDisabled = selectedNode?.type === 'final';
+             
               return (
                 <button
                   key={NodeComponent.metadata.type}
                   onClick={() => selectedNodeId && addNode(NodeComponent.metadata.type, selectedNodeId)}
-                  className="w-full text-left px-4 py-3 rounded-lg text-base bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition"
+                  className={`w-full text-left px-4 py-3 rounded-lg text-base bg-white border border-gray-300 shadow-sm
+                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'} transition`}
+                  disabled={isDisabled}
                 >
                   {NodeComponent.metadata.icon} {NodeComponent.metadata.name}
                 </button>
               );
             })}
         </div>
+
 
         {/* Diagrama central */}
         <div className="flex-1 bg-white rounded-lg p-0 shadow-sm relative h-full">
@@ -441,6 +659,7 @@ const FlowBuilder = () => {
           </ReactFlow>
         </div>
 
+
         {/* Panell de configuració dret */}
         {selectedNodeId && (
           <div className="w-80 bg-white border-l p-4 shadow h-full overflow-y-auto">
@@ -456,6 +675,7 @@ const FlowBuilder = () => {
           </div>
         )}
 
+
         {/* Toast d'error */}
         {toast && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow z-50 animate-fadeIn">
@@ -465,9 +685,7 @@ const FlowBuilder = () => {
       </main>
     </div>
   );
-};
-
-
+});
 
 
 const ConfigTab = () => (
@@ -476,5 +694,8 @@ const ConfigTab = () => (
   </ReactFlowProvider>
 );
 
+
 export default ConfigTab;
 
+
+export { FlowBuilder };
