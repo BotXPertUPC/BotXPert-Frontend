@@ -134,6 +134,27 @@ export const flowService = {
           }
         }
         
+        // También eliminar las opciones de lista existentes
+        try {
+          const listOptionsResponse = await api.get('/api/list-options/');
+          const listOptions = listOptionsResponse.data || [];
+          
+          // Filtrar opciones que pertenecen a nodos de este botflow
+          const relevantOptions = listOptions.filter((option: any) => {
+            const nodeId = option.node;
+            // Comprueba si este nodo pertenece al botflow actual
+            return existingNodes.some((node: any) => node.id === nodeId);
+          });
+          
+          // Eliminar opciones de lista
+          for (const option of relevantOptions) {
+            await api.delete(`/api/list-options/${option.id}/`);
+            console.log(`Deleted list option ${option.id}`);
+          }
+        } catch (listError) {
+          console.warn("Error cleaning list options:", listError);
+        }
+        
         // Luego eliminar los nodos
         for (const node of existingNodes) {
           await api.delete(`/api/nodes/${node.id}/`);
@@ -280,6 +301,74 @@ export const flowService = {
             console.log(`Updated relation: ${backendSourceNode.id} -> ${backendTargetNode.id}`);
           } catch (updateError) {
             console.error(`Failed to update relation for node ${backendSourceNode.id}:`, updateError);
+          }
+        }
+        
+        // 4. Crear opciones de lista para nodos de pregunta
+        const questionNodes = nodes.filter(node => node.type === 'pregunta');
+        console.log(`Processing ${questionNodes.length} question nodes`);
+        
+        // Map para buscar nodos por posición original
+        const nodeIdMap = new Map();
+        nodes.forEach((node, index) => {
+          const nodeId = index + 1; // Same ID scheme as node creation
+          const posKey = `${Math.round(node.position.x)}-${Math.round(node.position.y)}`;
+          nodeIdMap.set(posKey, nodeId);
+        });
+        
+        // Crear opciones de lista para cada nodo de pregunta
+        for (const questionNode of questionNodes) {
+          // Encontrar el ID del backend para este nodo
+          const posKey = `${Math.round(questionNode.position.x)}-${Math.round(questionNode.position.y)}`;
+          const backendNodeId = nodesByPosition.get(posKey)?.id;
+          
+          if (!backendNodeId) {
+            console.warn(`Backend node not found for question node at position ${posKey}`);
+            continue;
+          }
+          
+          const options = questionNode.data?.options || [];
+          const connections = questionNode.data?.connections || {};
+          
+          console.log(`Creating ${options.length} options for node ${backendNodeId}:`, connections);
+          
+          // Crear cada opción
+          for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+            const targetNodeId = connections[i];
+            
+            if (!targetNodeId) {
+              console.log(`Option ${i} has no target`);
+              continue;
+            }
+            
+            // Encontrar el nodo destino
+            const targetNode = nodes.find(n => n.id === targetNodeId);
+            if (!targetNode) {
+              console.warn(`Target node ${targetNodeId} not found`);
+              continue;
+            }
+            
+            // Buscar el ID del backend para el nodo destino
+            const targetPosKey = `${Math.round(targetNode.position.x)}-${Math.round(targetNode.position.y)}`;
+            const backendTargetNode = nodesByPosition.get(targetPosKey);
+            
+            if (!backendTargetNode) {
+              console.warn(`Backend target node not found at position ${targetPosKey}`);
+              continue;
+            }
+            
+            // Crear la opción de lista
+            try {
+              await api.post('/api/list-options/', {
+                node: backendNodeId,
+                label: option,
+                target_node: backendTargetNode.id
+              });
+              console.log(`Created option "${option}" for node ${backendNodeId} -> target ${backendTargetNode.id}`);
+            } catch (optionError) {
+              console.error(`Failed to create list option:`, optionError);
+            }
           }
         }
       } catch (relationsError) {
