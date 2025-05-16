@@ -42,19 +42,16 @@ function Dashboard() {
     const fetchBotflows = async () => {
       try {
         const response = await api.get<Botflow[]>(`/api/botflows/`);
-        console.log('API Response:', response.data);
         setChatbots(response.data);
       } catch (error) {
         console.error('Error fetching botflows:', error);
       }
     };
-  
     fetchBotflows();
   }, []);
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="border-b bg-white">
         <div className="max-w-screen-2xl mx-auto px-4 py-4 flex items-center justify-between">
 
@@ -131,7 +128,6 @@ function Dashboard() {
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/chatbot/${bot.id}/edit`)
-                    console.log('Edita', bot.id);
                   }}
                   />
                 </button>

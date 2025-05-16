@@ -120,7 +120,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
     setEdges: (newEdges: Edge[]) => setEdges(newEdges)
   }));
 
-  // Wrapped 'showToast' in useCallback to prevent it from changing on every render
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
@@ -133,7 +132,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
     optionIndex: number;
   } | null>(null);
 
-  /* ---------- Helpers ---------- */
   const hasOutgoingEdge = useCallback(
     (id: string) => edges.some((e) => e.source === id),
     [edges],
@@ -144,7 +142,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
     const fromNode = nodes.find((n) => n.id === fromNodeId);
     if (!fromNode) return;
    
-    // Verificar si el nodo origen es un nodo final
     if (fromNode.type === 'final') {
       showToast('No se pueden crear conexiones desde un nodo final.');
       return;
@@ -170,11 +167,9 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
       },
     };
  
-    // Actualizar el nodo origen con la nueva conexión
     setNodes((nds) =>
       nds.map((n) => {
         if (n.id === fromNodeId) {
-          // Preservar todas las conexiones existentes y añadir la nueva
           const currentConnections = n.data.connections || {};
           return {
             ...n,
@@ -210,14 +205,11 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
   };
 
 
-  /* ---------- Afegir node fill (només un per pare) ---------- */
   const addNode = (type: string, sourceNodeId: string) => {
     const source = nodes.find((n) => n.id === sourceNodeId);
     if (!source) return;
 
 
-    // Verificar si el nodo origen es un nodo final
-    // Los nodos finales NO deben tener ningún tipo de nodo conectado a ellos
     if (source.type === 'final') {
       showToast('No se pueden crear nodos a partir de un nodo final. Los nodos finales deben ser terminales.');
       return;
@@ -229,9 +221,7 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
     }
 
 
-    // Validaciones para nodos finales
     if (type === 'final') {
-      // Verificar si ya existe un nodo final que viene del mismo nodo origen
       const alreadyHasFinalNode = nodes
         .filter(node => node.type === 'final')
         .some(node => edges.some(edge => edge.source === sourceNodeId && edge.target === node.id));
@@ -241,7 +231,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
         return;
       }
      
-      // Verificar que el nodo origen está conectado al flujo (tiene entrada)
       const isNodeConnected = sourceNodeId === ROOT_ID || edges.some(edge => edge.target === sourceNodeId);
       if (!isNodeConnected) {
         showToast('No puedes crear un nodo final desde un nodo sin conexión de entrada.');
@@ -284,7 +273,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
     setNodes((nds) => [...nds, newNode]);
 
 
-    // 👉 Decide si ve d'una opció d'una pregunta
     if (connectOption) {
       const { nodeId: fromId, optionIndex } = connectOption;
   
@@ -299,7 +287,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
         },
       ]);
   
-      // Assigna la connexió a la opció concreta
       setNodes((nds) =>
         nds.map((n) => {
           if (n.id === fromId) {
@@ -320,7 +307,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
   
       setConnectOption(null); // Netegem després d’afegir
     } else {
-      // Flux normal, node correlatiu
       setEdges((eds) => [
         ...eds,
         {
@@ -347,7 +333,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
   };
 
 
-  // Wrapped 'deleteNode' in useCallback to prevent it from changing on every render
   const deleteNode = useCallback((nodeId: string) => {
     if (nodeId === ROOT_ID || hasOutgoingEdge(nodeId)) {
       showToast("No pots esborrar aquest node.");
@@ -375,22 +360,18 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
   }, [edges, hasOutgoingEdge, nodes, setCenter, showToast]);
 
 
-  /* ---------- Connexió drag‑and‑drop ---------- */
   const handleConnect = (params: Connection) => {
     if (!params.source || hasOutgoingEdge(params.source)) return;
     setEdges((eds) => addEdge({ ...params, type: 'custom' }, eds));
   };
 
 
-  /* ---------- Canvis de nodes ---------- */
   const handleNodesChange = (changes: NodeChange[]) => {
-    /* 1. Bloquegem l'eliminació de l'arrel o dels nodes amb sortida  */
     const transformed: NodeChange[] = changes.map((c) => {
       if (
         c.type === 'remove' &&
         (c.id === ROOT_ID || hasOutgoingEdge(c.id))
       ) {
-        /* Converteix el 'remove' en 'select' perquè no s'esborri */
         const sc: NodeSelectionChange = { id: c.id, type: 'select', selected: true };
         return sc;
       }
@@ -401,25 +382,22 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
     setNodes((nds) => applyNodeChanges(transformed, nds));
 
 
-    /* 2. Quins nodes s'han eliminat realment?  */
     const removedIds = changes
       .filter((c): c is NodeRemoveChange => c.type === 'remove')
       .map((c) => c.id)
       .filter((id) => id !== ROOT_ID && !hasOutgoingEdge(id));
 
 
-    /* 3. Esborrem les arestes que tocaven els nodes eliminats */
     if (removedIds.length) {
       setEdges((eds) =>
         eds.filter(
           (e) => !removedIds.includes(e.source) && !removedIds.includes(e.target),
         ),
-      );
+      );  
     }
   };
 
 
-  /* ---------- Canvis d'arestes: bloquejar 'remove' ---------- */
   const handleEdgesChange = (changes: EdgeChange[]) =>
     setEdges((eds) =>
       applyEdgeChanges(
@@ -441,11 +419,9 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Si el focus està en un input, textarea o select, no fem res
       const tag = (e.target as HTMLElement).tagName.toLowerCase();
       if (['input', 'textarea', 'select'].includes(tag)) return;
  
-      // Si s'ha premut Delete o Backspace
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (!selectedNodeId) return;
         deleteNode(selectedNodeId);
@@ -465,27 +441,22 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
     }
   }, [selectedNodeId, nodes]);
 
-  // Cargar datos al iniciar si hay botflowId
   useEffect(() => {
     if (botflowId) {
       loadFlowData(botflowId);
     }
   }, [botflowId]);
 
-  // Función para cargar datos del backend
   const loadFlowData = async (botflowId: number) => {
     setIsLoading(true);
     setLoadError(null);
     try {
       const backendNodes = await flowService.loadFlowNodes(botflowId);
       
-      // Solo reemplazar los nodos si obtenemos datos válidos del backend
       if (backendNodes && Array.isArray(backendNodes) && backendNodes.length > 0) {
-        // Aquí convertimos los nodos del backend al formato de ReactFlow
         const reactFlowNodes: Node[] = [];
         const reactFlowEdges: Edge[] = [];
         
-        // Crear un mapa para convertir los tipos del backend a ReactFlow
         const nodeTypeMap: Record<string, string> = {
           'START': 'inici',
           'TEXT': 'missatge', // Por defecto, puede cambiar según el contenido
@@ -493,13 +464,10 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
           'END': 'final'
         };
         
-        // Procesar cada nodo del backend
         backendNodes.forEach((backendNode: any) => {
-          // Determinar el tipo real basado en contenido o metadata
           let nodeType = nodeTypeMap[backendNode.type] || 'missatge';
           let nodeData: any = { text: backendNode.text || '' };
           
-          // Procesar nodos de tipo TEXT para detectar imágenes
           if (backendNode.type === 'TEXT' && backendNode.text) {
             try {
               const jsonData = JSON.parse(backendNode.text);
@@ -511,29 +479,24 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
                 };
               }
             } catch (e) {
-              // Si no es JSON, es texto normal
-            }
+              console.error("Error parsing JSON data:", e);}
           }
           
-          // Si es un nodo de pregunta, configurar opciones
           if (backendNode.type === 'LIST') {
             nodeType = 'pregunta';
             nodeData = {
               text: backendNode.list_header || '',
-              options: [], // Se añadirán según las opciones de la lista
+              options: [], 
               connections: {}
             };
             
-            // Procesar opciones si existen
             if (backendNode.list_options && Array.isArray(backendNode.list_options)) {
               nodeData.options = backendNode.list_options.map((opt: any) => opt.label);
               
-              // Crear conexiones para cada opción
               backendNode.list_options.forEach((opt: any, idx: number) => {
                 if (opt.target_node) {
                   nodeData.connections[idx] = String(opt.target_node);
                   
-                  // Crear borde para esta conexión
                   reactFlowEdges.push({
                     id: `e${backendNode.id}-${opt.target_node}`,
                     source: String(backendNode.id),
@@ -546,7 +509,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
             }
           }
           
-          // Crear el nodo de ReactFlow
           reactFlowNodes.push({
             id: String(backendNode.id),
             type: nodeType,
@@ -563,7 +525,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
             }
           });
           
-          // Si tiene next_node, crear una conexión
           if (backendNode.next_node && backendNode.type !== 'LIST') {
             reactFlowEdges.push({
               id: `e${backendNode.id}-${backendNode.next_node}`,
@@ -574,12 +535,10 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
           }
         });
         
-        // Actualizar estado con los nuevos nodos y bordes
         if (reactFlowNodes.length > 0) {
           setNodes(reactFlowNodes);
           setEdges(reactFlowEdges);
           
-          // Actualizar el contador de nodeId al máximo id + 1
           const maxId = Math.max(...reactFlowNodes.map(node => parseInt(node.id)));
           setNodeId(maxId + 1);
         }
@@ -592,7 +551,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
     }
   };
 
-  /* ---------- Render ---------- */
   return (
     <div className="min-h-screen bg-gray-50">
       {isLoading && (
@@ -611,16 +569,12 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
       )}
 
       <main className="flex h-screen">
-        {/* Sidebar esquerra amb botons */}
         <div className="w-72 bg-white border-r p-6 space-y-4">
           <p className="text-base font-semibold text-gray-700 mb-4">Afegeix node</p>
           {Object.entries(nodeTypes)
             .filter(([key, NodeComponent]) => NodeComponent.metadata.visible)
             .map(([key, NodeComponent]) => {
-              // Obtener el nodo seleccionado para verificaciones adicionales
               const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) : null;
-             
-              // Deshabilitar el botón si estamos intentando agregar un nodo a un nodo final
               const isDisabled = selectedNode?.type === 'final';
              
               return (
@@ -638,7 +592,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
         </div>
 
 
-        {/* Diagrama central */}
         <div className="flex-1 bg-white rounded-lg p-0 shadow-sm relative h-full">
           <ReactFlow
             nodeTypes={nodeTypes}
@@ -660,7 +613,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
         </div>
 
 
-        {/* Panell de configuració dret */}
         {selectedNodeId && (
           <div className="w-80 bg-white border-l p-4 shadow h-full overflow-y-auto">
             <NodeSettings
@@ -676,7 +628,6 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
         )}
 
 
-        {/* Toast d'error */}
         {toast && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow z-50 animate-fadeIn">
             {toast}
