@@ -18,7 +18,7 @@ const QuestionNode = ({ data, selected }: any) => {
       <ul className="mt-2 text-sm text-yellow-800 space-y-3 relative">
         {(data.options || []).map((opt: string, i: number) => (
           <li key={i} className="flex items-center justify-between gap-2 relative">
-            {/* Handle per connexió de l’opció */}
+            {/* Handle per connexió de l'opció */}
             <Handle
               type="source"
               position={Position.Right}
@@ -39,7 +39,9 @@ const QuestionNode = ({ data, selected }: any) => {
                 } ml-2`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  data.setConnectOption({ nodeId: data.id, optionIndex: i });
+                  if (data.setConnectOption) {
+                    data.setConnectOption({ nodeId: data.id, optionIndex: i });
+                  }
                 }}
               >
                 ➕ {isConnecting(i) ? 'Esperant...' : 'Connectar'}
