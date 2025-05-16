@@ -36,7 +36,6 @@ export const useAutoSave = ({
     }
   };
 
-  // Configurar el intervalo de autoguardado
   useEffect(() => {
     if (enabled) {
       timeoutRef.current = setInterval(executeAutoSave, interval);

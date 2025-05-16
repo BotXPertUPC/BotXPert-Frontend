@@ -21,11 +21,9 @@ function CreateChatbot() {
     setEdges: (edges: Edge[]) => void;
   }>(null);
 
-  // Efecto para guardar automáticamente antes de cerrar la página
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (flowBuilderRef.current && botflowId) {
-        // Intentar guardar los cambios
         e.preventDefault();
         e.returnValue = "¿Seguro que quieres salir? Los cambios pueden perderse.";
         return e.returnValue;
@@ -39,7 +37,6 @@ function CreateChatbot() {
     };
   }, [botflowId]);
 
-  // Función para guardar el flujo
   const saveFlow = async () => {
     if (!flowBuilderRef.current || !botflowId) return false;
     
@@ -70,25 +67,20 @@ function CreateChatbot() {
   };
 
   const validateFlow = () => {
-    // Accedim als nodes i arestes a través de la referència
     if (!flowBuilderRef.current) return false;
    
     const nodes = flowBuilderRef.current.getNodes();
     const edges = flowBuilderRef.current.getEdges();
    
-    // Busquem nodes que no siguin finals i no tinguin connexió sortint
     const errors: string[] = [];
    
-    // Primer comprovem si hi ha final nodes consecutius
     const finalNodes = nodes.filter(node => node.type === 'final');
    
-    // Comprovem quants nodes finals hi ha
     if (finalNodes.length > 3) {
       errors.push(`S'han detectat ${finalNodes.length} nodes finals. Això pot indicar un flux incorrecte.`);
     }
    
     nodes.forEach(node => {
-      // Si no és un node final, hauria de tenir una sortida
       if (node.type !== 'final') {
         const hasOutgoingEdge = edges.some(edge => edge.source === node.id);
         if (!hasOutgoingEdge) {
@@ -96,9 +88,7 @@ function CreateChatbot() {
         }
       }
      
-      // Comprovem si hi ha nodes finals amb connexions incorrectes
       if (node.type === 'final') {
-        // Comprovem si aquest node final té connexions entrants que provenen d'altres nodes finals
         const incomingEdges = edges.filter(edge => edge.target === node.id);
         incomingEdges.forEach(edge => {
           const sourceNode = nodes.find(n => n.id === edge.source);
@@ -107,7 +97,6 @@ function CreateChatbot() {
           }
         });
        
-        // Comprovem si aquest node final té connexions sortints
         const outgoingEdges = edges.filter(edge => edge.source === node.id);
         if (outgoingEdges.length > 0) {
           errors.push(`Error: El nodo final ${node.id} tiene ${outgoingEdges.length} conexiones salientes. Los nodos finales no pueden tener conexiones salientes.`);
@@ -115,7 +104,6 @@ function CreateChatbot() {
       }
     });
 
-    // Comprovem si hi ha nodes finals formant una cadena
     const finalNodesWithConnections = finalNodes.filter(node => {
       const hasIncoming = edges.some(edge => edge.target === node.id);
       const hasOutgoing = edges.some(edge => edge.source === node.id);
@@ -123,7 +111,6 @@ function CreateChatbot() {
     });
 
     if (finalNodesWithConnections.length > 1) {
-      // Comprovem si formen una cadena
       const finalNodeIds = finalNodes.map(node => node.id);
       const finalNodeEdges = edges.filter(edge =>
         finalNodeIds.includes(edge.source) || finalNodeIds.includes(edge.target)
@@ -143,8 +130,7 @@ function CreateChatbot() {
     if (isValid) {
       setShowDeployModal(true);
     } else {
-      // Mostrar els errors en un modal
-      setShowDeployModal(true); // Però amb contingut diferent que mostra els errors
+      setShowDeployModal(true); 
     }
   };
 
@@ -159,7 +145,6 @@ function CreateChatbot() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b relative">
         <div className="max-w-screen-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -196,7 +181,6 @@ function CreateChatbot() {
           </div>
         </div>
 
-        {/* Indicador de último guardado */}
         {saveSuccess !== null && (
           <div className={`absolute top-full right-4 -translate-y-full p-3 rounded shadow-lg transition-opacity duration-500 ${
             saveSuccess ? 'bg-green-100 border border-green-300 text-green-700' : 'bg-red-100 border border-red-300 text-red-700'
