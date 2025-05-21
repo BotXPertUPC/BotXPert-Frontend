@@ -14,4 +14,12 @@ const StartNode = ({ data, selected }: any) => (
   </BaseNode>
 );
 
+// Metadades del node encapsulades en un objecte separat
+StartNode.metadata = {
+  type: 'inici',
+  icon: '🚀',
+  name: 'Inici',
+  visible: false,
+};
+
 export default StartNode;

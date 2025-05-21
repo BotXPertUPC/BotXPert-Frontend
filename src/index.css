@@ -6,3 +6,40 @@ body {
   contain-intrinsic-size: auto;
   overflow-anchor: none;
 }
+
+.react-flow__edge-path {
+  stroke: #4b5563;
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 6;
+  animation: dashmove 1s linear infinite;
+}
+
+@keyframes dashmove {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+
+/* Buttons */
+.btn-primary {
+  @apply bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded hover:bg-gray-300;
+}
+
+/* Navigation Links */
+.nav-link {
+  @apply text-white font-medium hover:text-gray-300;
+}
+
+/* Containers */
+.screen-container {
+  @apply min-h-screen bg-gradient-to-br from-deepBlue via-softBlue to-softWhite text-white;
+}
+
+.max-container {
+  @apply max-w-7xl mx-auto;
+}

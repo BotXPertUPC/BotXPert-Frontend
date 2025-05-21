@@ -7,4 +7,12 @@ const RespostaNode = ({ data, selected }: any) => (
   </BaseNode>
 );
 
+// Metadades del node encapsulades en un objecte separat
+RespostaNode.metadata = {
+  type: 'resposta',
+  icon: '✍️',
+  name: 'Resposta',
+  visible: true,
+};
+
 export default RespostaNode;
