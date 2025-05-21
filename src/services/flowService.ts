@@ -302,7 +302,7 @@ function mapNodeTypeToBackend(type: string): string {
     case 'pregunta': return 'LIST';
     case 'imatge': return 'TEXT'; 
     case 'missatge': return 'TEXT';
-    case 'resposta': return 'TEXT';
+    case 'resposta': return 'ANSWER';
     default: return 'TEXT';
   }
 }

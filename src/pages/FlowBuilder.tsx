@@ -459,9 +459,10 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
         
         const nodeTypeMap: Record<string, string> = {
           'START': 'inici',
-          'TEXT': 'missatge', // Por defecto, puede cambiar según el contenido
+          'TEXT': 'missatge',
           'LIST': 'pregunta',
-          'END': 'final'
+          'END': 'final',
+          'ANSWER': 'resposta'
         };
         
         backendNodes.forEach((backendNode: any) => {
@@ -480,6 +481,9 @@ const FlowBuilder = React.forwardRef((props: { botflowId?: number }, ref) => {
               }
             } catch (e) {
               console.error("Error parsing JSON data:", e);}
+          } else if (backendNode.type === 'ANSWER') {
+            nodeType = 'resposta';
+            nodeData = { text: backendNode.text || '' };
           }
           
           if (backendNode.type === 'LIST') {
