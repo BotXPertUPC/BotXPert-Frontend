@@ -7,6 +7,7 @@ import ChatbotDetail from './ChatbotDetail';
 import ChatbotEditor from './ChatbotEditor';
 import ProtectedRoute from '../components/ProtectedRoute';
 import LoginPage from './LoginPage';
+import TutorialPage from './TutorialPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route path="/flow/:id" element={<ProtectedRoute><FlowBuilder /></ProtectedRoute>} />
       <Route path="/chatbot/:id" element={<ProtectedRoute><ChatbotDetail /></ProtectedRoute>} />
       <Route path="/chatbot/:id/edit" element={<ProtectedRoute><ChatbotEditor /></ProtectedRoute>} />
+      <Route path="/tutorials" element={<ProtectedRoute><TutorialPage /></ProtectedRoute>} />
     </Routes>
   );
 }
