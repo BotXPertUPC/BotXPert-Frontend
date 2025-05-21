@@ -68,7 +68,9 @@ function Dashboard() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <QuestionCircle className="w-6 h-6 text-gray-500" />
+            <button onClick={() => navigate('/tutorials')} className="hover:text-gray-700">
+  <QuestionCircle className="w-6 h-6 text-gray-500" />
+</button>
             <UserCircle className="w-8 h-8 text-gray-500" />
             <button
               onClick={handleLogout}
