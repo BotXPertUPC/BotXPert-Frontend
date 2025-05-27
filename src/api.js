@@ -7,7 +7,7 @@ const isLocalhost = window.location.hostname === 'localhost' ||
 
 const baseURL = isLocalhost 
   ? 'http://127.0.0.1:8000/' 
-  : 'http://187.33.149.121/';
+  : 'http://187.33.149.121:8000/';
 
 const api = axios.create({
   baseURL,
