@@ -1,4 +1,4 @@
-name: íº€ Deploy Frontend to Server
+name: ğŸš€ Deploy Full Stack to Server
 
 on:
   push:
@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: í´ Set up SSH
+      - name: ğŸ”‘ Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: íº€ Deploy via SSH
+      - name: ğŸš€ Deploy via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no root@187.33.149.121 '/root/update-frontend.sh'
+          ssh -o StrictHostKeyChecking=no root@187.33.149.121 '/root/start.sh'
