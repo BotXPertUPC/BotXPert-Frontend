@@ -12,6 +12,7 @@ FROM nginx:alpine
 
 # Copiem el build al directori de nginx
 COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Opcional: custom nginx.conf si cal
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
