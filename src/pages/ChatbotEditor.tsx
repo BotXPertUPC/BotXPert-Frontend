@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation  } from 'react-router-dom';
 import { ArrowLeft, Bot } from 'lucide-react';
 import api from '../api';
 
@@ -9,8 +9,12 @@ const ChatbotEditor = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(!!id);
-
-  useEffect(() => {
+  const query = new URLSearchParams(useLocation().search);
+  const name2 = query.get("name"); // Ex: "BotXpert"
+  const description2 = query.get("description");
+  setName(name2 || '');
+  setDescription(description2 || '');
+  /*useEffect(() => {
     if (id) {
       const fetchBot = async () => {
         try {
@@ -26,7 +30,7 @@ const ChatbotEditor = () => {
       };
       fetchBot();
     }
-  }, [id]);
+  }, [id]);*/
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

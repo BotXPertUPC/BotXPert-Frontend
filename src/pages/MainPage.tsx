@@ -113,7 +113,7 @@ function Dashboard() {
 
         {/* Chatbot List */}
         {chatbots.map((bot) => (
-          <div key={bot.id} className="bg-white rounded-lg p-6 mb-4 border hover:shadow-md transition-shadow" onClick={() => navigate(`/chatbot/${bot.id}`)}>
+          <div key={bot.id} className="bg-white rounded-lg p-6 mb-4 border hover:shadow-md transition-shadow" onClick={() => navigate(`/chatbot/${bot.id}?name=${encodeURIComponent(bot.name)}&description=${encodeURIComponent(bot.description)}`)}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="bg-gray-100 p-2 rounded-lg">
