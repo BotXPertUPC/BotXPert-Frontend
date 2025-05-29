@@ -9,8 +9,16 @@ const baseURL = isLocalhost
   ? 'http://127.0.0.1:8000/' 
   : 'http://187.33.149.121:8000/';
 
+const token = isLocalhost
+ ? '5fc8db25bf14ab3c73c9ba1aee9c24041417eb1a'
+ : 'f9362bf38eff64c300ec094dc050ca76906e0ede';
+
 const api = axios.create({
   baseURL,
+  headers: {
+    Authorization: `Token ${token}`,
+    Accept: 'application/json',
+  }
 });
 
 export default api;
