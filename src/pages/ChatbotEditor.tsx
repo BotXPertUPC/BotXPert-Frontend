@@ -14,7 +14,7 @@ const ChatbotEditor = () => {
     if (id) {
       const fetchBot = async () => {
         try {
-          const response = await api.get(`/api/botflows/${id}/`);
+          const response = await api.get(`botflows/${id}/`);
           setName(response.data.name);
           setDescription(response.data.description);
         } catch (error) {
@@ -33,9 +33,9 @@ const ChatbotEditor = () => {
 
     try {
       if (id) {
-        await api.put(`/api/botflows/${id}/`, { name, description, phone_number: '000000000' });
+        await api.put(`botflows/${id}/`, { name, description, phone_number: '000000000' });
       } else {
-        const response = await api.post(`/api/botflows/`, { name, description, phone_number: '000000000' });
+        const response = await api.post(`botflows/`, { name, description, phone_number: '000000000' });
         return navigate(`/chatbot/${response.data.id}`);
       }
 
