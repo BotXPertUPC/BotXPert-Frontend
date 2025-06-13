@@ -68,12 +68,12 @@ export const flowService = {
       }
       
       try {
-        const existingResponse = await api.get(`/api/botflows/${botflowId}/nodes/`);
+        const existingResponse = await api.get(`botflows/${botflowId}/nodes/`);
         const existingNodes = existingResponse.data || [];
         
         for (const node of existingNodes) {
           if (node.next_node) {
-            await api.put(`/api/nodes/${node.id}/`, {
+            await api.put(`nodes/${node.id}/`, {
               ...node,
               next_node: null
             });
@@ -81,7 +81,7 @@ export const flowService = {
         }
         
         try {
-          const listOptionsResponse = await api.get('/api/list-options/');
+          const listOptionsResponse = await api.get('list-options/');
           const listOptions = listOptionsResponse.data || [];
           
           const relevantOptions = listOptions.filter((option: any) => {
@@ -90,14 +90,14 @@ export const flowService = {
           });
           
           for (const option of relevantOptions) {
-            await api.delete(`/api/list-options/${option.id}/`);
+            await api.delete(`list-options/${option.id}/`);
           }
         } catch (listError) {
           console.warn("Error cleaning list options:", listError);
         }
         
         for (const node of existingNodes) {
-          await api.delete(`/api/nodes/${node.id}/`);
+          await api.delete(`nodes/${node.id}/`);
         }
       } catch (e) {
         console.warn("Error al limpiar nodos:", e);
@@ -129,7 +129,7 @@ export const flowService = {
       try {
         for (let i = 1; i <= nodesData.length; i++) {
           try {
-            await api.delete(`/api/nodes/${i}/`);
+            await api.delete(`nodes/${i}/`);
           } catch (error) {
             // Ignore errors - node might not exist
           }
@@ -140,7 +140,7 @@ export const flowService = {
       
       for (const nodeData of nodesData) {
         try {
-          await api.post(`/api/nodes/`, nodeData);
+          await api.post(`nodes/`, nodeData);
         } catch (nodeError: unknown) {
           const isAxiosError = (error: any): error is { response?: { data?: any; status?: number } } => {
             return error && typeof error === 'object' && 'response' in error;
@@ -153,7 +153,7 @@ export const flowService = {
             
             if (nodeError.response?.status === 400) {
               try {
-                await api.put(`/api/nodes/${nodeData.id}/`, nodeData);
+                await api.put(`nodes/${nodeData.id}/`, nodeData);
               } catch (putError) {
                 console.error(`PUT also failed for node ${nodeData.id}:`, putError);
               }
@@ -165,7 +165,7 @@ export const flowService = {
       }
       
       try {
-        const allNodesResponse = await api.get(`/api/botflows/${botflowId}/nodes/`);
+        const allNodesResponse = await api.get(`botflows/${botflowId}/nodes/`);
         const allNodes = allNodesResponse.data;
         
         const nodesByPosition = new Map();
@@ -206,7 +206,7 @@ export const flowService = {
           }
           
           try {
-            await api.put(`/api/nodes/${backendSourceNode.id}/`, {
+            await api.put(`nodes/${backendSourceNode.id}/`, {
               ...backendSourceNode,
               next_node: backendTargetNode.id
             });
@@ -259,7 +259,7 @@ export const flowService = {
             }
             
             try {
-              await api.post('/api/list-options/', {
+              await api.post('list-options/', {
                 node: backendNodeId,
                 label: option,
                 target_node: backendTargetNode.id
@@ -286,7 +286,7 @@ export const flowService = {
 
   loadFlowNodes: async (botflowId: number) => {
     try {
-      const response = await api.get(`/api/botflows/${botflowId}/nodes/`);
+      const response = await api.get(`botflows/${botflowId}/nodes/`);
       return response.data;
     } catch (error) {
       console.error("Error cargando nodos:", error);

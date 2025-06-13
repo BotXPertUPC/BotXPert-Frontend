@@ -21,7 +21,7 @@ function Dashboard() {
   const confirmDelete = async () => {
     if (botToDelete) {
       try {
-        await api.delete(`/api/botflows/${botToDelete.id}/`);
+        await api.delete(`botflows/${botToDelete.id}/`);
         setChatbots((prev) => prev.filter((b) => b.id !== botToDelete.id));
       } catch (err) {
         console.error('Error esborrant el bot:', err);
@@ -41,7 +41,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchBotflows = async () => {
       try {
-        const response = await api.get<Botflow[]>(`/api/botflows/`);
+        const response = await api.get<Botflow[]>(`botflows/`);
         setChatbots(response.data);
       } catch (error) {
         console.error('Error fetching botflows:', error);
