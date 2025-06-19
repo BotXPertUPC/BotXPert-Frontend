@@ -1,3 +1,9 @@
+# Autors
+Anyer Moreno \
+Andreu Sabater \
+Maria Salvat \
+Arnau Ventura 
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
